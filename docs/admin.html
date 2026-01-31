@@ -1,0 +1,102 @@
+<!DOCTYPE html>    
+<html lang="es">    
+<head>    
+    <meta charset="UTF-8">    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">    
+    <title>Panel de Administración - TCG Dual</title>    
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>    
+<body>    
+    <div class="admin-nav">
+        <a href="index.html" class="btn btn-secondary">Volver al Visor</a>
+        <button id="btn-dashboard" class="btn">Dashboard</button>
+    </div>
+
+    <!-- Dashboard View -->
+    <div id="view-dashboard" class="admin-section active">
+        <div class="admin-header">
+            <h1>Mis Álbumes</h1>
+            <button id="btn-create-album" class="btn">Crear Nuevo Álbum</button>
+        </div>
+        <div id="album-list" class="album-list">
+            <!-- Albums will be loaded here -->
+            <div class="loading">Cargando álbumes...</div>
+        </div>
+    </div>
+
+    <!-- Album Editor View -->
+    <div id="view-editor" class="admin-section" style="display:none;">
+        <div class="admin-header">
+            <h1 id="editor-title">Editar Álbum</h1>
+            <button id="btn-save-album-meta" class="btn">Guardar Cambios</button>
+        </div>
+        
+        <div class="album-card" style="max-width: 600px; margin: 0 auto 40px;">
+            <div class="form-group">
+                <label>Título del Álbum</label>
+                <input type="text" id="input-album-title" placeholder="Nuevo Álbum">
+            </div>
+            <div class="form-group">
+                <label>URL Imagen de Portada</label>
+                <input type="text" id="input-album-cover" placeholder="https://...">
+            </div>
+            <div class="form-group">
+                <label>URL Imagen de Contraportada</label>
+                <input type="text" id="input-album-back" placeholder="https://...">
+            </div>
+        </div>
+
+        <div class="admin-header">
+            <h2>Páginas</h2>
+            <button id="btn-add-page" class="btn">Añadir Página</button>
+        </div>
+        <div id="page-list" class="page-list-container">
+            <!-- Pages will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Card Slot Modal -->
+    <div id="slot-modal" class="overlay">
+        <div class="overlay-content">
+            <span id="close-slot-modal" class="close-btn">&times;</span>
+            <h2>Editar Espacio</h2>
+            <div class="form-group">
+                <label>URL de la Imagen</label>
+                <input type="text" id="slot-image-url">
+            </div>
+            <div class="form-group">
+                <label>Nombre de la Carta</label>
+                <input type="text" id="slot-name">
+            </div>
+            <div class="info-grid">
+                <div class="form-group">
+                    <label>Rareza</label>
+                    <input type="text" id="slot-rarity">
+                </div>
+                <div class="form-group">
+                    <label>Expansión</label>
+                    <input type="text" id="slot-expansion">
+                </div>
+                <div class="form-group">
+                    <label>Estado</label>
+                    <input type="text" id="slot-condition">
+                </div>
+                <div class="form-group">
+                    <label>Cantidad</label>
+                    <input type="text" id="slot-quantity">
+                </div>
+                <div class="form-group price-item">
+                    <label>Precio</label>
+                    <input type="text" id="slot-price">
+                </div>
+            </div>
+            <button id="btn-save-slot" class="btn" style="width: 100%; margin-top: 20px;">Guardar Carta</button>
+        </div>
+    </div>
+
+    <script src="js/supabase-config.js"></script>
+    <script src="js/admin.js"></script>
+</body>    
+</html>

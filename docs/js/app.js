@@ -1,0 +1,152 @@
+$(document).ready(async function() {
+    if ($.isTouch === undefined) {
+        $.isTouch = 'ontouchstart' in window;
+    }
+
+    const { data: albums, error: albumError } = await _supabase
+        .from('albums')
+        .select('*')
+        .order('id', { ascending: true });
+
+    if (albumError) {
+        console.error('Error fetching albums:', albumError);
+        $('#albums-container').html('<div class="error">Error al cargar álbumes.</div>');
+        return;
+    }
+
+    if (albums.length === 0) {
+        $('#albums-container').html('<div class="empty">No hay álbumes disponibles.</div>');
+        return;
+    }
+
+    $('#albums-container').empty();
+
+    for (const album of albums) {
+        await renderAlbum(album);
+    }
+
+    // Modal logic
+    $(document).on("click", ".card-slot", function() {
+        const $slot = $(this);
+        const imgSrc = $slot.find("img").attr("src");
+        
+        if (!imgSrc || imgSrc.includes('placeholder')) return;
+
+        const name = $slot.data("name") || "Carta de Colección";
+        const rarity = $slot.data("rarity") || "-";
+        const expansion = $slot.data("expansion") || "-";
+        const condition = $slot.data("condition") || "-";
+        const quantity = $slot.data("quantity") || "1";
+        const price = $slot.data("price") || "-";
+
+        $("#expanded-image").attr("src", imgSrc);
+        $("#card-name").text(name);
+        $("#card-rarity").text(rarity);
+        $("#card-expansion").text(expansion);
+        $("#card-condition").text(condition);
+        $("#card-quantity").text(quantity);
+        $("#card-price").text(price);
+
+        $("#image-overlay").addClass("active");
+    });
+
+    $(document).on("click", "#close-btn, #image-overlay", function(e) {
+        if (e.target === this || $(this).attr('id') === 'close-btn') {
+            $("#image-overlay").removeClass("active");
+        }
+    });
+});
+
+async function renderAlbum(album) {
+    const $albumWrapper = $('<div class="album-wrapper"></div>');
+    const $albumDiv = $(`<div id="album-${album.id}" class="album"></div>`);
+    
+    $albumWrapper.append($albumDiv);
+    $('#albums-container').append($albumWrapper);
+
+    // Fetch pages for this album
+    const { data: pages, error: pageError } = await _supabase
+        .from('pages')
+        .select('*')
+        .eq('album_id', album.id)
+        .order('page_index', { ascending: true });
+
+    if (pageError) {
+        console.error(`Error fetching pages for album ${album.id}:`, pageError);
+        return;
+    }
+
+    // Front cover page (using album cover_image_url if available)
+    const coverImg = album.cover_image_url || 'https://via.placeholder.com/600x840?text=Portada';
+    const $coverPage = $(`
+        <div class="page cover-page">
+            <img src="${coverImg}" alt="${album.title}">
+        </div>
+    `);
+    $albumDiv.append($coverPage);
+
+    // Regular pages
+    for (const page of pages) {
+        const $pageDiv = $('<div class="page"></div>');
+        const $grid = $('<div class="grid-container"></div>');
+        
+        // Fetch card slots for this page
+        const { data: slots, error: slotError } = await _supabase
+            .from('card_slots')
+            .select('*')
+            .eq('page_id', page.id)
+            .order('slot_index', { ascending: true });
+
+        if (slotError) {
+            console.error(`Error fetching slots for page ${page.id}:`, slotError);
+        }
+
+        // Create 9 slots
+        for (let i = 0; i < 9; i++) {
+            const slotData = slots ? slots.find(s => s.slot_index === i) : null;
+            const $slot = $('<div class="card-slot"></div>');
+            
+            if (slotData) {
+                $slot.attr('data-name', slotData.name || '');
+                $slot.attr('data-rarity', slotData.rarity || '');
+                $slot.attr('data-expansion', slotData.expansion || '');
+                $slot.attr('data-condition', slotData.condition || '');
+                $slot.attr('data-quantity', slotData.quantity || '');
+                $slot.attr('data-price', slotData.price || '');
+                
+                if (slotData.image_url) {
+                    $slot.append(`<img src="${slotData.image_url}" class="tcg-card">`);
+                }
+            }
+            
+            $grid.append($slot);
+        }
+
+        $pageDiv.append($grid);
+        $albumDiv.append($pageDiv);
+    }
+
+    // Back cover (optional, adding one more page if total pages + cover is odd to make it even for turn.js double display)
+    const totalPagesIncludingCover = pages.length + 1;
+    if (totalPagesIncludingCover % 2 !== 0) {
+        const backImg = album.back_image_url || 'https://via.placeholder.com/600x840?text=Contraportada';
+        const $backPage = $(`
+            <div class="page cover-page">
+                <img src="${backImg}" alt="Back Cover">
+            </div>
+        `);
+        $albumDiv.append($backPage);
+    }
+
+    // Initialize turn.js
+    setTimeout(function() {
+        $albumDiv.turn({
+            width: 600,
+            height: 420,
+            autoCenter: false,
+            gradients: true,
+            acceleration: true,
+            display: 'double'
+        });
+    }, 100);
+}

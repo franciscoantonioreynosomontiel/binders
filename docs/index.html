@@ -1,0 +1,60 @@
+<!DOCTYPE html>    
+<html lang="es">    
+<head>    
+    <meta charset="UTF-8">    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">    
+    <title>Carpeta TCG Dual - Visor</title>    
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>    
+<body>    
+    <div class="admin-nav">
+        <a href="admin.html" class="btn">Panel de Control</a>
+    </div>
+
+    <div id="albums-container" class="main-container">    
+        <!-- Albums will be loaded here dynamically -->
+        <div class="loading">Cargando álbumes...</div>
+    </div>    
+    
+    <!-- Modal para expandir imagen -->    
+    <div id="image-overlay" class="overlay">    
+        <div class="overlay-content">    
+            <span id="close-btn">&times;</span>    
+            <img id="expanded-image" src="" alt="Carta Expandida">    
+            <div class="card-info"> 
+                <div id="card-name" class="card-name">Nombre de la Carta</div> 
+                 
+                <div class="info-grid"> 
+                    <div class="info-item"> 
+                        <div class="info-label">Rareza</div> 
+                        <div id="card-rarity" class="info-value">-</div> 
+                    </div> 
+                    <div class="info-item"> 
+                        <div class="info-label">Expansión</div> 
+                        <div id="card-expansion" class="info-value">-</div> 
+                    </div> 
+                    <div class="info-item"> 
+                        <div class="info-label">Estado</div> 
+                        <div id="card-condition" class="info-value">-</div> 
+                    </div> 
+                    <div class="info-item"> 
+                        <div class="info-label">Cantidad</div> 
+                        <div id="card-quantity" class="info-value">-</div> 
+                    </div> 
+                    <div class="info-item price-item"> 
+                        <div class="info-label">Precio Estimado</div> 
+                        <div id="card-price" class="info-value">-</div> 
+                    </div> 
+                </div> 
+            </div> 
+        </div>    
+    </div>    
+    
+    <!-- Librerías -->    
+    <script src="js/turn.js"></script>    
+    <script src="js/supabase-config.js"></script>
+    <script src="js/app.js"></script>
+</body>    
+</html>
