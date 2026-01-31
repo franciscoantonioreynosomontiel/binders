@@ -183,31 +183,13 @@ async function renderAlbum(album) {
         $albumDiv.turn({
             width: 600,
             height: 420,
-            autoCenter: false,
+            autoCenter: true,
             gradients: true,
             acceleration: false,
             display: 'double',
             elevation: 50,
-            duration: 1000,
-            when: {
-                turning: function() {
-                    $(this).css({top: 0, left: 0});
-                },
-                turned: function() {
-                    $(this).css({top: 0, left: 0});
-                },
-                start: function() {
-                    $(this).css({top: 0, left: 0});
-                },
-                end: function() {
-                    $(this).css({top: 0, left: 0});
-                }
-            }
+            duration: 1000
         });
-
-        // Final force position and prevent overflow issues
-        $albumDiv.css({top: 0, left: 0, position: 'absolute'});
-        $albumDiv.parent().css({position: 'relative', overflow: 'visible'});
     };
 
     if (totalImages === 0) {
