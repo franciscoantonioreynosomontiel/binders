@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visor de Álbumes - TCG Dual</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" src="js/turn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div id="store-title-container" style="position: fixed; top: 20px; width: 100%; text-align: center; z-index: 100;">
+        <h1 id="public-store-name" style="color: white; text-shadow: 0 0 10px rgba(0,168,255,0.5);">Cargando Tienda...</h1>
+    </div>
+
+    <div class="main-container" id="albums-container">
+        <!-- Dynamic Albums will be loaded here -->
+        <div class="loading">Cargando álbumes...</div>
+    </div>
+
+    <!-- Image Overlay / Modal -->
+    <div id="image-overlay" class="overlay">
+        <div class="overlay-content">
+            <span id="close-btn">&times;</span>
+            <img id="expanded-image" src="" alt="Carta Expandida">
+            <div class="card-info">
+                <div id="card-name" class="card-name">Nombre de la Carta</div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Rareza</div>
+                        <div id="card-rarity" class="info-value">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Expansión</div>
+                        <div id="card-expansion" class="info-value">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Estado</div>
+                        <div id="card-condition" class="info-value">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Cantidad</div>
+                        <div id="card-quantity" class="info-value">1</div>
+                    </div>
+                    <div class="info-item price-item">
+                        <div class="info-label">Precio Estimado</div>
+                        <div id="card-price" class="info-value">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/supabase-config.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

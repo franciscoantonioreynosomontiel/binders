@@ -3,10 +3,34 @@ $(document).ready(async function() {
         $.isTouch = 'ontouchstart' in window;
     }
 
-    const { data: albums, error: albumError } = await _supabase
-        .from('albums')
-        .select('*')
-        .order('id', { ascending: true });
+    // Check if we are in public view
+    const urlParams = new URLSearchParams(window.location.search);
+    const storeName = urlParams.get('store');
+
+    let query = _supabase.from('albums').select('*');
+
+    if (storeName) {
+        // Find user by store name
+        const { data: userData, error: userError } = await _supabase
+            .from('usuarios')
+            .select('id, store_name')
+            .eq('store_name', storeName)
+            .single();
+
+        if (userError || !userData) {
+            console.error('Store not found:', storeName);
+            $('#albums-container').html('<div class="error">Tienda no encontrada.</div>');
+            return;
+        }
+
+        $('#public-store-name').text(`Tienda: ${userData.store_name}`);
+        query = query.eq('user_id', userData.id);
+    } else {
+        // If no store param, just hide the title if it exists
+        $('#public-store-name').hide();
+    }
+
+    const { data: albums, error: albumError } = await query.order('id', { ascending: true });
 
     if (albumError) {
         console.error('Error fetching albums:', albumError);
@@ -15,7 +39,7 @@ $(document).ready(async function() {
     }
 
     if (albums.length === 0) {
-        $('#albums-container').html('<div class="empty">No hay álbumes disponibles.</div>');
+        $('#albums-container').html('<div class="empty">No hay álbumes disponibles en esta tienda.</div>');
         return;
     }
 
@@ -76,7 +100,7 @@ async function renderAlbum(album) {
         return;
     }
 
-    // Front cover page (using album cover_image_url if available)
+    // Front cover page
     const coverImg = album.cover_image_url || 'https://via.placeholder.com/600x840?text=Portada';
     const $coverPage = $(`
         <div class="page cover-page">
@@ -126,7 +150,7 @@ async function renderAlbum(album) {
         $albumDiv.append($pageDiv);
     }
 
-    // Back cover (optional, adding one more page if total pages + cover is odd to make it even for turn.js double display)
+    // Back cover
     const totalPagesIncludingCover = pages.length + 1;
     if (totalPagesIncludingCover % 2 !== 0) {
         const backImg = album.back_image_url || 'https://via.placeholder.com/600x840?text=Contraportada';
@@ -145,7 +169,7 @@ async function renderAlbum(album) {
             height: 420,
             autoCenter: false,
             gradients: true,
-            acceleration: true,
+            acceleration: false, // Fix flip displacement
             display: 'double'
         });
     }, 100);

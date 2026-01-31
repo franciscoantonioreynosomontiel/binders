@@ -1,9 +1,28 @@
 let currentAlbumId = null;
 let currentSlotIndex = null;
 let currentPageId = null;
+let currentUser = null;
 
 $(document).ready(function() {
-    loadAlbums();
+    checkSession();
+
+    // Authentication UI Toggles
+    $('#btn-show-register').click(function() {
+        $('#btn-login, #btn-show-register').hide();
+        $('#register-fields, #btn-register, #btn-back-to-login').show();
+        $('.login-container h1').text('Crear Cuenta');
+    });
+
+    $('#btn-back-to-login').click(function() {
+        $('#btn-login, #btn-show-register').show();
+        $('#register-fields, #btn-register, #btn-back-to-login').hide();
+        $('.login-container h1').text('Iniciar Sesión');
+    });
+
+    // Authentication Actions
+    $('#btn-login').click(handleLogin);
+    $('#btn-register').click(handleRegister);
+    $('#btn-logout').click(handleLogout);
 
     // Navigation
     $('#btn-dashboard').click(function() {
@@ -12,9 +31,11 @@ $(document).ready(function() {
     });
 
     $('#btn-create-album').click(async function() {
+        if (!currentUser) return;
+
         const { data, error } = await _supabase
             .from('albums')
-            .insert([{ title: 'Nuevo Álbum' }])
+            .insert([{ title: 'Nuevo Álbum', user_id: currentUser.id }])
             .select();
 
         if (error) {
@@ -42,12 +63,12 @@ $(document).ready(function() {
         } else {
             alert('Álbum actualizado');
             loadAlbums();
+            showView('dashboard');
         }
     });
 
     // Page Management
     $('#btn-add-page').click(async function() {
-        // Get current max index
         const { data: pages } = await _supabase
             .from('pages')
             .select('page_index')
@@ -74,8 +95,6 @@ $(document).ready(function() {
     $(document).on('click', '.card-slot', function() {
         currentPageId = $(this).closest('.admin-page-item').data('id');
         currentSlotIndex = $(this).data('index');
-        
-        // Load existing slot data if any
         loadSlotData(currentPageId, currentSlotIndex);
     });
 
@@ -110,12 +129,99 @@ $(document).ready(function() {
     });
 });
 
+// Auth Functions
+function checkSession() {
+    const session = localStorage.getItem('tcg_session');
+    if (session) {
+        currentUser = JSON.parse(session);
+        showAuthenticatedContent();
+    } else {
+        showLoginView();
+    }
+}
+
+async function handleLogin() {
+    const username = $('#login-username').val();
+    const password = $('#login-password').val();
+
+    if (!username || !password) {
+        alert('Por favor, completa todos los campos');
+        return;
+    }
+
+    const { data, error } = await _supabase
+        .from('usuarios')
+        .select('*')
+        .eq('username', username)
+        .eq('password', password)
+        .single();
+
+    if (error || !data) {
+        alert('Usuario o contraseña incorrectos');
+    } else {
+        currentUser = data;
+        localStorage.setItem('tcg_session', JSON.stringify(data));
+        showAuthenticatedContent();
+    }
+}
+
+async function handleRegister() {
+    const username = $('#login-username').val();
+    const password = $('#login-password').val();
+    const store_name = $('#login-store').val();
+
+    if (!username || !password || !store_name) {
+        alert('Por favor, completa todos los campos incluyendo el nombre de tu tienda');
+        return;
+    }
+
+    const { data, error } = await _supabase
+        .from('usuarios')
+        .insert([{ username, password, store_name }])
+        .select()
+        .single();
+
+    if (error) {
+        alert('Error al registrar usuario: ' + (error.message || 'El usuario o tienda ya existe'));
+        console.error(error);
+    } else {
+        alert('Usuario registrado con éxito. Ya puedes iniciar sesión.');
+        $('#btn-back-to-login').click();
+    }
+}
+
+function handleLogout() {
+    currentUser = null;
+    localStorage.removeItem('tcg_session');
+    location.reload();
+}
+
+function showLoginView() {
+    $('#login-modal').addClass('active');
+    $('#authenticated-content').hide();
+}
+
+function showAuthenticatedContent() {
+    $('#login-modal').removeClass('active');
+    $('#authenticated-content').show();
+    $('#welcome-message').text(`Álbumes de ${currentUser.username}`);
+
+    // Generate public store link
+    const publicUrl = `${window.location.origin}${window.location.pathname.replace('admin.html', 'public.html')}?store=${encodeURIComponent(currentUser.store_name)}`;
+    $('#store-link-container').html(`Link público: <a href="${publicUrl}" target="_blank" style="color: #00ff88;">${publicUrl}</a>`);
+
+    showView('dashboard');
+    loadAlbums();
+}
+
+// Data Functions
 async function loadAlbums() {
     $('#album-list').html('<div class="loading">Cargando álbumes...</div>');
 
     const { data: albums, error } = await _supabase
         .from('albums')
         .select('*')
+        .eq('user_id', currentUser.id)
         .order('id', { ascending: true });
 
     if (error) {
@@ -124,6 +230,11 @@ async function loadAlbums() {
     }
 
     $('#album-list').empty();
+    if (albums.length === 0) {
+        $('#album-list').html('<div class="empty">No tienes álbumes. Crea uno para empezar.</div>');
+        return;
+    }
+
     albums.forEach(album => {
         const cover = album.cover_image_url || 'https://via.placeholder.com/300x150?text=Sin+Portada';
         const $card = $(`
@@ -201,7 +312,6 @@ async function loadAlbumPages(albumId) {
 
         const $grid = $pageItem.find('.grid-container');
         
-        // Fetch slots for this page
         const { data: slots } = await _supabase
             .from('card_slots')
             .select('*')
@@ -238,7 +348,6 @@ async function loadSlotData(pageId, slotIndex) {
         .eq('slot_index', slotIndex)
         .single();
 
-    // Clear form
     $('#slot-image-url').val('');
     $('#slot-name').val('');
     $('#slot-rarity').val('');

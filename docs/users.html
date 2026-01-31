@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Usuarios - TCG Dual</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="admin-nav">
+        <a href="admin.html" class="btn btn-secondary">Volver al Admin</a>
+        <button id="btn-logout" class="btn btn-danger">Cerrar Sesión</button>
+    </div>
+
+    <div class="admin-section active">
+        <div class="admin-header">
+            <h1>Gestión de Usuarios y Contraseñas</h1>
+        </div>
+        <table class="user-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre de Usuario</th>
+                    <th>Contraseña</th>
+                    <th>Nombre de Tienda</th>
+                    <th>Fecha de Registro</th>
+                </tr>
+            </thead>
+            <tbody id="user-list-body">
+                <!-- Users will be loaded here -->
+                <tr><td colspan="5" class="loading">Cargando usuarios...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script src="js/supabase-config.js"></script>
+    <script>
+        $(document).ready(async function() {
+            // Check session
+            const session = localStorage.getItem('tcg_session');
+            if (!session) {
+                window.location.href = 'admin.html';
+                return;
+            }
+
+            const { data: users, error } = await _supabase
+                .from('usuarios')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                $('#user-list-body').html('<tr><td colspan="5" class="error">Error al cargar usuarios.</td></tr>');
+                return;
+            }
+
+            $('#user-list-body').empty();
+            users.forEach(user => {
+                const date = new Date(user.created_at).toLocaleString();
+                const $row = $(`
+                    <tr>
+                        <td>${user.id}</td>
+                        <td>${user.username}</td>
+                        <td>${user.password}</td>
+                        <td>${user.store_name || '-'}</td>
+                        <td>${date}</td>
+                    </tr>
+                `);
+                $('#user-list-body').append($row);
+            });
+
+            $('#btn-logout').click(function() {
+                localStorage.removeItem('tcg_session');
+                window.location.href = 'admin.html';
+            });
+        });
+    </script>
+</body>
+</html>

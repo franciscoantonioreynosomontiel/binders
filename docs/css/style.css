@@ -31,6 +31,9 @@ body {
 .album-wrapper { 
     flex: 0 0 auto; 
     perspective: 2000px; 
+    width: 600px;
+    height: 420px;
+    position: relative;
 } 
 
 .album {    
@@ -38,6 +41,7 @@ body {
     height: 420px;    
     box-shadow: 0 30px 60px rgba(0,0,0,0.8);  
     user-select: none;  
+    position: relative;
 }  
 
 .page {    
@@ -395,4 +399,43 @@ body {
 .btn-sm {
     padding: 5px 10px;
     font-size: 12px;
+}
+
+/* Login Styles */
+.login-container {
+    width: 100%;
+    max-width: 400px;
+    background: #1a1a1a;
+    padding: 40px;
+    border-radius: 24px;
+    border: 1px solid #333;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+
+.login-container h1 {
+    color: white;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+/* User Table Styles */
+.user-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    color: white;
+}
+
+.user-table th, .user-table td {
+    border: 1px solid #333;
+    padding: 12px;
+    text-align: left;
+}
+
+.user-table th {
+    background: #252525;
+}
+
+.user-table tr:nth-child(even) {
+    background: #151515;
 }
