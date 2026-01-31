@@ -183,9 +183,9 @@ async function renderAlbum(album) {
         $albumDiv.turn({
             width: 600,
             height: 420,
-            autoCenter: true,
+            autoCenter: false,
             gradients: true,
-            acceleration: false,
+            acceleration: true,
             display: 'double',
             elevation: 50,
             duration: 1000
