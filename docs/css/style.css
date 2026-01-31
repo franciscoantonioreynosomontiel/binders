@@ -47,24 +47,8 @@ body {
     height: 420px !important;
     box-shadow: 0 30px 60px rgba(0,0,0,0.8);  
     user-select: none;  
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    margin: 0 !important;
-    transform: translate(0, 0) !important;
+    margin: 0 auto;
 }  
-
-/* Ensure turn.js internal pages don't shift */
-.album .turn-page {
-    top: 0 !important;
-    left: 0 !important;
-}
-
-/* Fix for potential shift when turning */
-.album > div {
-    top: 0 !important;
-    left: 0 !important;
-}
 
 .page {    
     background: #1a1a1a;    
