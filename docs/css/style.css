@@ -31,6 +31,9 @@ body {
 .album-wrapper { 
     flex: 0 0 auto; 
     perspective: 2000px; 
+    width: 600px;
+    height: 420px;
+    position: relative;
 } 
 
 .album {    
@@ -38,6 +41,7 @@ body {
     height: 420px;    
     box-shadow: 0 30px 60px rgba(0,0,0,0.8);  
     user-select: none;  
+    position: relative;
 }  
 
 .page {    

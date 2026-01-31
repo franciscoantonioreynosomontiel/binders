@@ -145,7 +145,7 @@ async function renderAlbum(album) {
             height: 420,
             autoCenter: false,
             gradients: true,
-            acceleration: true,
+            acceleration: false,
             display: 'double'
         });
     }, 100);
