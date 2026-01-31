@@ -9,51 +9,84 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>    
 <body>    
-    <div class="admin-nav">
-        <a href="index.html" class="btn btn-secondary">Volver al Visor</a>
-        <button id="btn-dashboard" class="btn">Dashboard</button>
+    <!-- Login Modal -->
+    <div id="login-modal" class="overlay active">
+        <div class="overlay-content login-container">
+            <h1>Iniciar Sesión</h1>
+            <div class="form-group">
+                <label>Usuario</label>
+                <input type="text" id="login-username" placeholder="Tu nombre de usuario">
+            </div>
+            <div class="form-group">
+                <label>Contraseña</label>
+                <input type="password" id="login-password" placeholder="********">
+            </div>
+            <div id="register-fields" style="display: none; width: 100%;">
+                <div class="form-group">
+                    <label>Nombre de tu Tienda</label>
+                    <input type="text" id="login-store" placeholder="Mi Tienda TCG">
+                </div>
+            </div>
+            <button id="btn-login" class="btn" style="width: 100%; margin-bottom: 15px;">Entrar</button>
+            <div style="display: flex; gap: 10px; width: 100%;">
+                <button id="btn-show-register" class="btn btn-secondary" style="flex: 1;">Registrarse</button>
+                <button id="btn-register" class="btn btn-secondary" style="display: none; flex: 1; background: #27ae60;">Crear Cuenta</button>
+            </div>
+            <button id="btn-back-to-login" class="btn btn-secondary" style="display: none; width: 100%; margin-top: 10px;">Volver al Login</button>
+        </div>
     </div>
 
-    <!-- Dashboard View -->
-    <div id="view-dashboard" class="admin-section active">
-        <div class="admin-header">
-            <h1>Mis Álbumes</h1>
-            <button id="btn-create-album" class="btn">Crear Nuevo Álbum</button>
+    <!-- Authenticated Content -->
+    <div id="authenticated-content" style="display: none; width: 100%;">
+        <div class="admin-nav">
+            <a href="index.html" class="btn btn-secondary">Volver al Visor</a>
+            <button id="btn-dashboard" class="btn">Mis Álbumes</button>
+            <a href="users.html" class="btn">Panel de Usuarios</a>
+            <button id="btn-logout" class="btn btn-danger">Cerrar Sesión</button>
         </div>
-        <div id="album-list" class="album-list">
-            <!-- Albums will be loaded here -->
-            <div class="loading">Cargando álbumes...</div>
-        </div>
-    </div>
 
-    <!-- Album Editor View -->
-    <div id="view-editor" class="admin-section" style="display:none;">
-        <div class="admin-header">
-            <h1 id="editor-title">Editar Álbum</h1>
-            <button id="btn-save-album-meta" class="btn">Guardar Cambios</button>
-        </div>
-        
-        <div class="album-card" style="max-width: 600px; margin: 0 auto 40px;">
-            <div class="form-group">
-                <label>Título del Álbum</label>
-                <input type="text" id="input-album-title" placeholder="Nuevo Álbum">
+        <!-- Dashboard View -->
+        <div id="view-dashboard" class="admin-section active">
+            <div class="admin-header">
+                <h1 id="welcome-message">Mis Álbumes</h1>
+                <p id="store-link-container" style="color: #00a8ff; margin-bottom: 20px;"></p>
+                <button id="btn-create-album" class="btn">Crear Nuevo Álbum</button>
             </div>
-            <div class="form-group">
-                <label>URL Imagen de Portada</label>
-                <input type="text" id="input-album-cover" placeholder="https://...">
-            </div>
-            <div class="form-group">
-                <label>URL Imagen de Contraportada</label>
-                <input type="text" id="input-album-back" placeholder="https://...">
+            <div id="album-list" class="album-list">
+                <!-- Albums will be loaded here -->
+                <div class="loading">Cargando álbumes...</div>
             </div>
         </div>
 
-        <div class="admin-header">
-            <h2>Páginas</h2>
-            <button id="btn-add-page" class="btn">Añadir Página</button>
-        </div>
-        <div id="page-list" class="page-list-container">
-            <!-- Pages will be loaded here -->
+        <!-- Album Editor View -->
+        <div id="view-editor" class="admin-section" style="display:none;">
+            <div class="admin-header">
+                <h1 id="editor-title">Editar Álbum</h1>
+                <button id="btn-save-album-meta" class="btn">Guardar Cambios</button>
+            </div>
+
+            <div class="album-card" style="max-width: 600px; margin: 0 auto 40px;">
+                <div class="form-group">
+                    <label>Título del Álbum</label>
+                    <input type="text" id="input-album-title" placeholder="Nuevo Álbum">
+                </div>
+                <div class="form-group">
+                    <label>URL Imagen de Portada</label>
+                    <input type="text" id="input-album-cover" placeholder="https://...">
+                </div>
+                <div class="form-group">
+                    <label>URL Imagen de Contraportada</label>
+                    <input type="text" id="input-album-back" placeholder="https://...">
+                </div>
+            </div>
+
+            <div class="admin-header">
+                <h2>Páginas</h2>
+                <button id="btn-add-page" class="btn">Añadir Página</button>
+            </div>
+            <div id="page-list" class="page-list-container">
+                <!-- Pages will be loaded here -->
+            </div>
         </div>
     </div>
 
