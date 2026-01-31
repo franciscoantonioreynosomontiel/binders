@@ -51,7 +51,20 @@ body {
     top: 0 !important;
     left: 0 !important;
     margin: 0 !important;
+    transform: translate(0, 0) !important;
 }  
+
+/* Ensure turn.js internal pages don't shift */
+.album .turn-page {
+    top: 0 !important;
+    left: 0 !important;
+}
+
+/* Fix for potential shift when turning */
+.album > div {
+    top: 0 !important;
+    left: 0 !important;
+}
 
 .page {    
     background: #1a1a1a;    
@@ -64,6 +77,7 @@ body {
     position: relative;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
+    transform-style: preserve-3d;
 }  
 
 .cover-page {  

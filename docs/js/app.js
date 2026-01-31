@@ -170,8 +170,16 @@ async function renderAlbum(album) {
         $albumDiv.append($backPage);
     }
 
-    // Initialize turn.js
-    setTimeout(function() {
+    // Initialize turn.js after images are loaded or after a timeout
+    const $images = $albumDiv.find('img');
+    let loadedCount = 0;
+    const totalImages = $images.length;
+    let turnInitialized = false;
+
+    const initTurn = () => {
+        if (turnInitialized) return;
+        turnInitialized = true;
+
         $albumDiv.turn({
             width: 600,
             height: 420,
@@ -180,6 +188,7 @@ async function renderAlbum(album) {
             acceleration: false,
             display: 'double',
             elevation: 50,
+            duration: 1000,
             when: {
                 turning: function() {
                     $(this).css({top: 0, left: 0});
@@ -196,7 +205,21 @@ async function renderAlbum(album) {
             }
         });
 
-        // Final force position
-        $albumDiv.css({top: 0, left: 0});
-    }, 150);
+        // Final force position and prevent overflow issues
+        $albumDiv.css({top: 0, left: 0, position: 'absolute'});
+        $albumDiv.parent().css({position: 'relative', overflow: 'visible'});
+    };
+
+    if (totalImages === 0) {
+        setTimeout(initTurn, 150);
+    } else {
+        $images.on('load error', function() {
+            loadedCount++;
+            if (loadedCount >= totalImages) {
+                setTimeout(initTurn, 200);
+            }
+        });
+        // Fallback for slow images
+        setTimeout(initTurn, 1500);
+    }
 }
