@@ -179,7 +179,21 @@ async function renderAlbum(album) {
             gradients: true,
             acceleration: false,
             display: 'double',
-            elevation: 50
+            elevation: 50,
+            when: {
+                turning: function() {
+                    $(this).css({top: 0, left: 0});
+                },
+                turned: function() {
+                    $(this).css({top: 0, left: 0});
+                },
+                start: function() {
+                    $(this).css({top: 0, left: 0});
+                },
+                end: function() {
+                    $(this).css({top: 0, left: 0});
+                }
+            }
         });
 
         // Final force position
