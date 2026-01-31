@@ -5,10 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Usuarios - TCG Dual</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body>
+<body class="public-body">
     <div class="admin-nav">
         <a href="admin.html" class="btn btn-secondary">Volver al Admin</a>
         <button id="btn-logout" class="btn btn-danger">Cerrar Sesión</button>
@@ -39,8 +40,15 @@
     <script>
         $(document).ready(async function() {
             // Check session
-            const session = localStorage.getItem('tcg_session');
-            if (!session) {
+            const sessionData = localStorage.getItem('tcg_session');
+            if (!sessionData) {
+                window.location.href = 'admin.html';
+                return;
+            }
+
+            const currentUser = JSON.parse(sessionData);
+            if (currentUser.role !== 'admin') {
+                alert('Acceso restringido solo para administradores.');
                 window.location.href = 'admin.html';
                 return;
             }

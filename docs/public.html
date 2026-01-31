@@ -5,18 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Visor de Álbumes - TCG Dual</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script type="text/javascript" src="js/turn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body>
-    <div id="store-title-container" style="position: fixed; top: 20px; width: 100%; text-align: center; z-index: 100;">
-        <h1 id="public-store-name" style="color: white; text-shadow: 0 0 10px rgba(0,168,255,0.5);">Cargando Tienda...</h1>
-    </div>
+<body class="public-body">
+    <header class="public-header">
+        <div class="store-badge">
+            <i class="fas fa-store"></i>
+            <span id="public-store-name">Cargando Tienda...</span>
+        </div>
+        <h1>Colección de Álbumes</h1>
+        <p>Explora nuestra selección de cartas y colecciones exclusivas.</p>
+    </header>
 
-    <div class="main-container" id="albums-container">
+    <div class="public-main-container" id="albums-container">
         <!-- Dynamic Albums will be loaded here -->
-        <div class="loading">Cargando álbumes...</div>
+        <div class="loading">
+            <i class="fas fa-spinner fa-spin"></i> Cargando álbumes...
+        </div>
     </div>
 
     <!-- Image Overlay / Modal -->

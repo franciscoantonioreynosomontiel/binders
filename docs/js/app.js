@@ -82,11 +82,19 @@ $(document).ready(async function() {
 });
 
 async function renderAlbum(album) {
-    const $albumWrapper = $('<div class="album-wrapper"></div>');
-    const $albumDiv = $(`<div id="album-${album.id}" class="album"></div>`);
+    const $albumContainer = $(`
+        <div class="public-album-item">
+            <div class="public-album-header">
+                <i class="fas fa-book-open"></i> ${album.title}
+            </div>
+            <div class="album-wrapper">
+                <div id="album-${album.id}" class="album"></div>
+            </div>
+        </div>
+    `);
     
-    $albumWrapper.append($albumDiv);
-    $('#albums-container').append($albumWrapper);
+    const $albumDiv = $albumContainer.find('.album');
+    $('#albums-container').append($albumContainer);
 
     // Fetch pages for this album
     const { data: pages, error: pageError } = await _supabase
@@ -169,8 +177,12 @@ async function renderAlbum(album) {
             height: 420,
             autoCenter: false,
             gradients: true,
-            acceleration: false, // Fix flip displacement
-            display: 'double'
+            acceleration: false,
+            display: 'double',
+            elevation: 50
         });
-    }, 100);
+
+        // Final force position
+        $albumDiv.css({top: 0, left: 0});
+    }, 150);
 }

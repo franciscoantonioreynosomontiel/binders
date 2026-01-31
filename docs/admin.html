@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">    
     <title>Panel de Administración - TCG Dual</title>    
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
 </head>    
 <body>    
     <!-- Login Modal -->
@@ -39,18 +41,18 @@
     <!-- Authenticated Content -->
     <div id="authenticated-content" style="display: none; width: 100%;">
         <div class="admin-nav">
-            <a href="index.html" class="btn btn-secondary">Volver al Visor</a>
-            <button id="btn-dashboard" class="btn">Mis Álbumes</button>
-            <a href="users.html" class="btn">Panel de Usuarios</a>
-            <button id="btn-logout" class="btn btn-danger">Cerrar Sesión</button>
+            <a href="index.html" class="btn btn-secondary"><i class="fas fa-eye"></i> Volver al Visor</a>
+            <button id="btn-dashboard" class="btn"><i class="fas fa-book"></i> Mis Álbumes</button>
+            <a href="users.html" id="btn-users-panel" class="btn" style="display: none;"><i class="fas fa-users-cog"></i> Panel de Usuarios</a>
+            <button id="btn-logout" class="btn btn-danger"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</button>
         </div>
 
         <!-- Dashboard View -->
         <div id="view-dashboard" class="admin-section active">
             <div class="admin-header">
                 <h1 id="welcome-message">Mis Álbumes</h1>
-                <p id="store-link-container" style="color: #00a8ff; margin-bottom: 20px;"></p>
-                <button id="btn-create-album" class="btn">Crear Nuevo Álbum</button>
+                <div id="store-link-container"></div>
+                <button id="btn-create-album" class="btn"><i class="fas fa-plus"></i> Crear Nuevo Álbum</button>
             </div>
             <div id="album-list" class="album-list">
                 <!-- Albums will be loaded here -->
@@ -62,7 +64,7 @@
         <div id="view-editor" class="admin-section" style="display:none;">
             <div class="admin-header">
                 <h1 id="editor-title">Editar Álbum</h1>
-                <button id="btn-save-album-meta" class="btn">Guardar Cambios</button>
+                <button id="btn-save-album-meta" class="btn"><i class="fas fa-save"></i> Guardar Cambios</button>
             </div>
 
             <div class="album-card" style="max-width: 600px; margin: 0 auto 40px;">
@@ -81,8 +83,8 @@
             </div>
 
             <div class="admin-header">
-                <h2>Páginas</h2>
-                <button id="btn-add-page" class="btn">Añadir Página</button>
+                <h2><i class="fas fa-file-alt"></i> Páginas</h2>
+                <button id="btn-add-page" class="btn"><i class="fas fa-plus-circle"></i> Añadir Página</button>
             </div>
             <div id="page-list" class="page-list-container">
                 <!-- Pages will be loaded here -->
@@ -125,11 +127,10 @@
                     <input type="text" id="slot-price">
                 </div>
             </div>
-            <button id="btn-save-slot" class="btn" style="width: 100%; margin-top: 20px;">Guardar Carta</button>
+            <button id="btn-save-slot" class="btn" style="width: 100%; margin-top: 20px;"><i class="fas fa-check-circle"></i> Guardar Carta</button>
         </div>
     </div>
 
-    <script src="js/supabase-config.js"></script>
     <script src="js/admin.js"></script>
 </body>    
 </html>
