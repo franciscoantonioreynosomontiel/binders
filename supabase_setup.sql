@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     username TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL, -- Advertencia: En producción se debe usar hashing
     store_name TEXT UNIQUE,
+    role TEXT DEFAULT 'user', -- 'admin' o 'user'
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 

@@ -197,21 +197,63 @@ function handleLogout() {
 }
 
 function showLoginView() {
+    $('body').removeClass('public-body');
     $('#login-modal').addClass('active');
     $('#authenticated-content').hide();
 }
 
 function showAuthenticatedContent() {
+    $('body').addClass('public-body');
     $('#login-modal').removeClass('active');
     $('#authenticated-content').show();
     $('#welcome-message').text(`Álbumes de ${currentUser.username}`);
 
+    // Show user panel only if admin
+    if (currentUser.role === 'admin') {
+        $('#btn-users-panel').show();
+    } else {
+        $('#btn-users-panel').hide();
+    }
+
     // Generate public store link
     const publicUrl = `${window.location.origin}${window.location.pathname.replace('admin.html', 'public.html')}?store=${encodeURIComponent(currentUser.store_name)}`;
-    $('#store-link-container').html(`Link público: <a href="${publicUrl}" target="_blank" style="color: #00ff88;">${publicUrl}</a>`);
+
+    const linkHtml = `
+        <div class="share-card">
+            <div class="share-info">
+                <i class="fas fa-link"></i>
+                <span>Enlace de tu tienda:</span>
+                <input type="text" id="public-link-input" value="${publicUrl}" readonly>
+            </div>
+            <button onclick="copyPublicLink()" class="btn btn-copy">
+                <i class="fas fa-copy"></i> Copiar
+            </button>
+            <a href="${publicUrl}" target="_blank" class="btn btn-visit">
+                <i class="fas fa-external-link-alt"></i> Visitar
+            </a>
+        </div>
+    `;
+    $('#store-link-container').html(linkHtml);
 
     showView('dashboard');
     loadAlbums();
+}
+
+function copyPublicLink() {
+    const copyText = document.getElementById("public-link-input");
+    copyText.select();
+    copyText.setSelectionRange(0, 99999); // For mobile devices
+    navigator.clipboard.writeText(copyText.value);
+
+    const btn = document.querySelector('.btn-copy');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-check"></i> ¡Copiado!';
+    btn.classList.add('btn-success');
+
+    setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.classList.remove('btn-success');
+    }, 2000);
 }
 
 // Data Functions

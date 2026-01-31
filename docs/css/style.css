@@ -17,6 +17,11 @@ body {
     align-items: center; 
 }  
 
+.public-body {
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
 .main-container {  
     display: flex; 
     justify-content: center; 
@@ -34,14 +39,18 @@ body {
     width: 600px;
     height: 420px;
     position: relative;
+    overflow: visible;
 } 
 
 .album {    
-    width: 600px;    
-    height: 420px;    
+    width: 600px !important;
+    height: 420px !important;
     box-shadow: 0 30px 60px rgba(0,0,0,0.8);  
     user-select: none;  
-    position: relative;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    margin: 0 !important;
 }  
 
 .page {    
@@ -218,12 +227,86 @@ body {
 
 /* Admin Panel Styles */
 .admin-nav {
-    position: fixed;
-    top: 20px;
-    left: 20px;
     display: flex;
     gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 30px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 12px;
     z-index: 1000;
+}
+
+.admin-nav .btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Share Card */
+.share-card {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 16px;
+    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+}
+
+.share-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 300px;
+}
+
+.share-info i {
+    color: #38bdf8;
+    font-size: 1.2rem;
+}
+
+.share-info span {
+    font-weight: 600;
+    color: #94a3b8;
+    white-space: nowrap;
+}
+
+.share-info input {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #38bdf8;
+    padding: 8px 12px;
+    border-radius: 8px;
+    width: 100%;
+    font-family: monospace;
+    font-size: 0.9rem;
+}
+
+.btn-copy {
+    background: #38bdf8 !important;
+    color: #0f172a !important;
+}
+
+.btn-visit {
+    background: #10b981 !important;
+    color: white !important;
+    text-decoration: none;
+    font-size: 0.9rem;
+    padding: 10px 20px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-success {
+    background: #22c55e !important;
+    color: white !important;
 }
 
 .btn {
@@ -438,4 +521,76 @@ body {
 
 .user-table tr:nth-child(even) {
     background: #151515;
+}
+
+/* Public Store Redesign */
+.public-header {
+    text-align: center;
+    padding: 60px 20px;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    color: white;
+    margin-bottom: 40px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    width: 100%;
+}
+
+.public-header h1 {
+    font-size: 2.5rem;
+    margin: 10px 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.public-header p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+.store-badge {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 8px 16px;
+    border-radius: 50px;
+    backdrop-filter: blur(5px);
+    margin-bottom: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.store-badge i {
+    margin-right: 10px;
+    color: #00d2ff;
+}
+
+.public-main-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+    width: 100%;
+}
+
+.public-album-item {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 50px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.public-album-header {
+    font-size: 1.8rem;
+    color: #00d2ff;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid rgba(0, 210, 255, 0.3);
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.public-album-header i {
+    margin-right: 15px;
 }
