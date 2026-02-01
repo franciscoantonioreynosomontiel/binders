@@ -51,17 +51,12 @@ body {
     user-select: none;  
     position: relative;
     margin: 0 !important;
-    /* Prevent the library from moving the container */
-    left: 0 !important;
-    top: 0 !important;
-    transform: translateZ(0);
     will-change: transform;
 }  
 
-/* Ensure internal turn.js pages stay centered */
+/* Ensure internal turn.js pages are properly positioned */
 .album .turn-page {
     position: absolute !important;
-    margin: 0 !important;
 }
 
 .page {    
@@ -72,6 +67,9 @@ body {
     height: 420px;
     box-shadow: inset 0 0 50px rgba(0,0,0,0.5); 
     overflow: hidden;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform: translateZ(0);
 }  
 
 .cover-page {  
@@ -630,6 +628,7 @@ body {
     align-items: center;
     width: 100%;
     overflow: hidden;
+    container-type: inline-size;
 }
 
 .public-album-header {
@@ -668,17 +667,30 @@ body {
     }
 
     .album-wrapper {
-        /* Scale the 600px album to fit the screen with enough margin for paddings */
-        --album-scale: min(1, calc((100vw - 50px) / 600));
-        transform: scale(var(--album-scale));
-        /* Compensate for both height and width change to keep layout flow and prevent clipping */
-        margin: calc((var(--album-scale) * 420 - 420) / 2) calc((var(--album-scale) * 600 - 600) / 2);
+        width: 100cqw;
+        max-width: 600px;
+        /* Calculate height to maintain 600:420 aspect ratio based on actual width */
+        height: calc(min(600px, 100cqw) * 420 / 600);
+        margin: 20px auto;
+        position: relative;
+        overflow: visible;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transform: none;
+    }
+
+    .album {
+        --scale: calc(min(600px, 100cqw - 10px) / 600);
+        transform: scale(var(--scale)) !important;
         transform-origin: center center;
+        flex: 0 0 auto;
+        margin: 0 !important;
     }
 
     .public-album-item {
         padding: 15px 5px;
-        overflow: visible; /* Allow scaled shadow/elements to be seen */
+        overflow: hidden;
     }
 
     .info-grid {
