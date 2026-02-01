@@ -6,22 +6,8 @@ let currentUser = null;
 $(document).ready(function() {
     checkSession();
 
-    // Authentication UI Toggles
-    $('#btn-show-register').click(function() {
-        $('#btn-login, #btn-show-register').hide();
-        $('#register-fields, #btn-register, #btn-back-to-login').show();
-        $('.login-container h1').text('Crear Cuenta');
-    });
-
-    $('#btn-back-to-login').click(function() {
-        $('#btn-login, #btn-show-register').show();
-        $('#register-fields, #btn-register, #btn-back-to-login').hide();
-        $('.login-container h1').text('Iniciar Sesión');
-    });
-
     // Authentication Actions
     $('#btn-login').click(handleLogin);
-    $('#btn-register').click(handleRegister);
     $('#btn-logout').click(handleLogout);
 
     // Navigation
@@ -39,7 +25,7 @@ $(document).ready(function() {
             .select();
 
         if (error) {
-            alert('Error al crear álbum');
+            Swal.fire('Error', 'No se pudo crear el álbum', 'error');
             console.error(error);
         } else {
             loadAlbums();
@@ -58,10 +44,16 @@ $(document).ready(function() {
             .eq('id', currentAlbumId);
 
         if (error) {
-            alert('Error al guardar metadatos');
+            Swal.fire('Error', 'No se pudieron guardar los cambios', 'error');
             console.error(error);
         } else {
-            alert('Álbum actualizado');
+            Swal.fire({
+                title: '¡Actualizado!',
+                text: 'El álbum se ha actualizado correctamente',
+                icon: 'success',
+                timer: 2000,
+                showConfirmButton: false
+            });
             loadAlbums();
             showView('dashboard');
         }
@@ -84,7 +76,7 @@ $(document).ready(function() {
             .select();
 
         if (error) {
-            alert('Error al añadir página');
+            Swal.fire('Error', 'No se pudo añadir la página', 'error');
             console.error(error);
         } else {
             loadAlbumPages(currentAlbumId);
@@ -116,9 +108,16 @@ $(document).ready(function() {
             .upsert(slotData, { onConflict: 'page_id,slot_index' });
 
         if (error) {
-            alert('Error al guardar carta');
+            Swal.fire('Error', 'No se pudo guardar la información de la carta', 'error');
             console.error(error);
         } else {
+            Swal.fire({
+                title: 'Guardado',
+                text: 'Carta actualizada',
+                icon: 'success',
+                timer: 1500,
+                showConfirmButton: false
+            });
             $('#slot-modal').removeClass('active');
             loadAlbumPages(currentAlbumId);
         }
@@ -145,7 +144,7 @@ async function handleLogin() {
     const password = $('#login-password').val();
 
     if (!username || !password) {
-        alert('Por favor, completa todos los campos');
+        Swal.fire('Atención', 'Por favor, completa todos los campos', 'warning');
         return;
     }
 
@@ -157,37 +156,11 @@ async function handleLogin() {
         .single();
 
     if (error || !data) {
-        alert('Usuario o contraseña incorrectos');
+        Swal.fire('Error', 'Usuario o contraseña incorrectos', 'error');
     } else {
         currentUser = data;
         localStorage.setItem('tcg_session', JSON.stringify(data));
         showAuthenticatedContent();
-    }
-}
-
-async function handleRegister() {
-    const username = $('#login-username').val();
-    const password = $('#login-password').val();
-    const store_name = $('#login-store').val();
-    const role = $('#login-role').val();
-
-    if (!username || !password || !store_name) {
-        alert('Por favor, completa todos los campos incluyendo el nombre de tu tienda');
-        return;
-    }
-
-    const { data, error } = await _supabase
-        .from('usuarios')
-        .insert([{ username, password, store_name, role }])
-        .select()
-        .single();
-
-    if (error) {
-        alert('Error al registrar usuario: ' + (error.message || 'El usuario o tienda ya existe'));
-        console.error(error);
-    } else {
-        alert('Usuario registrado con éxito. Ya puedes iniciar sesión.');
-        $('#btn-back-to-login').click();
     }
 }
 
@@ -315,10 +288,25 @@ async function editAlbum(album) {
 }
 
 async function deleteAlbum(id) {
-    if (confirm('¿Estás seguro de eliminar este álbum y todo su contenido?')) {
+    const result = await Swal.fire({
+        title: '¿Estás seguro?',
+        text: "Se eliminará el álbum y todo su contenido permanentemente",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ff4757',
+        cancelButtonColor: '#333',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    });
+
+    if (result.isConfirmed) {
         const { error } = await _supabase.from('albums').delete().eq('id', id);
-        if (error) alert('Error al eliminar');
-        else loadAlbums();
+        if (error) {
+            Swal.fire('Error', 'No se pudo eliminar el álbum', 'error');
+        } else {
+            Swal.fire('Eliminado', 'El álbum ha sido borrado', 'success');
+            loadAlbums();
+        }
     }
 }
 
@@ -376,10 +364,25 @@ async function loadAlbumPages(albumId) {
 }
 
 async function deletePage(id) {
-    if (confirm('¿Eliminar esta página?')) {
+    const result = await Swal.fire({
+        title: '¿Eliminar página?',
+        text: "Esta acción no se puede deshacer",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ff4757',
+        cancelButtonColor: '#333',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    });
+
+    if (result.isConfirmed) {
         const { error } = await _supabase.from('pages').delete().eq('id', id);
-        if (error) alert('Error al eliminar');
-        else loadAlbumPages(currentAlbumId);
+        if (error) {
+            Swal.fire('Error', 'No se pudo eliminar la página', 'error');
+        } else {
+            Swal.fire('Eliminada', 'La página ha sido borrada', 'success');
+            loadAlbumPages(currentAlbumId);
+        }
     }
 }
 

@@ -668,14 +668,17 @@ body {
     }
 
     .album-wrapper {
-        /* Scale the 600px album to fit the screen with 20px margin */
-        transform: scale(min(1, calc((100vw - 20px) / 600)));
-        /* Compensate for the height change due to scaling */
-        margin: calc((min(1, calc((100vw - 20px) / 600)) * 420 - 420) / 2) 0;
+        /* Scale the 600px album to fit the screen with enough margin for paddings */
+        --album-scale: min(1, calc((100vw - 50px) / 600));
+        transform: scale(var(--album-scale));
+        /* Compensate for both height and width change to keep layout flow and prevent clipping */
+        margin: calc((var(--album-scale) * 420 - 420) / 2) calc((var(--album-scale) * 600 - 600) / 2);
+        transform-origin: center center;
     }
 
     .public-album-item {
-        padding: 15px 10px;
+        padding: 15px 5px;
+        overflow: visible; /* Allow scaled shadow/elements to be seen */
     }
 
     .info-grid {
