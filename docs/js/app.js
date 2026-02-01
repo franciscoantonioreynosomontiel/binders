@@ -185,10 +185,10 @@ async function renderAlbum(album) {
             height: 420,
             autoCenter: false,
             gradients: true,
-            acceleration: false,
+            acceleration: true,
             display: 'double',
-            elevation: 50,
-            duration: 1000
+            elevation: 0,
+            duration: 600
         });
     };
 
