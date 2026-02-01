@@ -23,6 +23,12 @@ INSERT INTO usuarios (username, password, store_name, role)
 VALUES ('admin', 'admin123', 'AdminStore', 'admin')
 ON CONFLICT (username) DO NOTHING;
 
--- 4. Habilitar RLS (Opcional, pero recomendado para seguridad básica)
--- Por ahora, como el usuario dijo que no importa la seguridad, lo dejaremos abierto
--- o con políticas simples si es necesario.
+-- 4. Deshabilitar RLS para todas las tablas (Como solicitó el usuario para facilitar el desarrollo)
+ALTER TABLE usuarios DISABLE ROW LEVEL SECURITY;
+ALTER TABLE albums DISABLE ROW LEVEL SECURITY;
+ALTER TABLE pages DISABLE ROW LEVEL SECURITY;
+ALTER TABLE card_slots DISABLE ROW LEVEL SECURITY;
+
+-- NOTA: Si ya tienes un usuario y quieres hacerlo administrador manualmente,
+-- ejecuta el siguiente comando reemplazando 'TU_USUARIO' por tu nombre de usuario:
+-- UPDATE usuarios SET role = 'admin' WHERE username = 'TU_USUARIO';

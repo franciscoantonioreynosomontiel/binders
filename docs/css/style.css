@@ -49,7 +49,16 @@ body {
     user-select: none;  
     position: relative;
     margin: 0;
+    /* Prevent the library from moving the container */
+    left: 0 !important;
+    top: 0 !important;
 }  
+
+/* Ensure internal turn.js pages stay centered */
+.album .turn-page {
+    position: absolute !important;
+    margin: 0 !important;
+}
 
 .page {    
     background: #1a1a1a;    

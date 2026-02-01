@@ -169,6 +169,7 @@ async function handleRegister() {
     const username = $('#login-username').val();
     const password = $('#login-password').val();
     const store_name = $('#login-store').val();
+    const role = $('#login-role').val();
 
     if (!username || !password || !store_name) {
         alert('Por favor, completa todos los campos incluyendo el nombre de tu tienda');
@@ -177,7 +178,7 @@ async function handleRegister() {
 
     const { data, error } = await _supabase
         .from('usuarios')
-        .insert([{ username, password, store_name }])
+        .insert([{ username, password, store_name, role }])
         .select()
         .single();
 
