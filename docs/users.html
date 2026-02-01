@@ -67,6 +67,7 @@
         </table>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="js/supabase-config.js"></script>
     <script>
         $(document).ready(async function() {
@@ -79,7 +80,7 @@
 
             const currentUser = JSON.parse(sessionData);
             if (currentUser.role !== 'admin') {
-                alert('Acceso restringido solo para administradores.');
+                await Swal.fire('Acceso Denegado', 'Solo los administradores pueden acceder a este panel.', 'error');
                 window.location.href = 'admin.html';
                 return;
             }
@@ -134,7 +135,7 @@
                 const role = $('#new-role').val();
 
                 if (!username || !password || !store_name) {
-                    alert('Completa todos los campos');
+                    Swal.fire('Atención', 'Por favor, completa todos los campos', 'warning');
                     return;
                 }
 
@@ -143,9 +144,9 @@
                     .insert([{ username, password, store_name, role }]);
 
                 if (error) {
-                    alert('Error al crear usuario: ' + error.message);
+                    Swal.fire('Error', 'No se pudo crear el usuario: ' + error.message, 'error');
                 } else {
-                    alert('Usuario creado con éxito');
+                    Swal.fire('¡Éxito!', 'Usuario creado correctamente', 'success');
                     $('#create-user-panel').slideUp();
                     $('#new-username, #new-password, #new-store').val('');
                     loadUsers();
@@ -163,14 +164,20 @@
                     .eq('id', userId);
 
                 if (error) {
-                    alert('Error al actualizar rol');
+                    Swal.fire('Error', 'No se pudo actualizar el rol', 'error');
                     console.error(error);
                 } else {
                     if (userId === currentUser.id) {
                         currentUser.role = newRole;
                         localStorage.setItem('tcg_session', JSON.stringify(currentUser));
                     }
-                    alert('Rol actualizado');
+                    Swal.fire({
+                        title: 'Actualizado',
+                        text: 'Rol del usuario actualizado con éxito',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
                 }
             });
 
@@ -178,18 +185,32 @@
             $(document).on('click', '.btn-delete-user', async function() {
                 const userId = $(this).data('id');
                 if (userId === currentUser.id) {
-                    alert('No puedes eliminarte a ti mismo.');
+                    Swal.fire('Acción denegada', 'No puedes eliminar tu propia cuenta.', 'info');
                     return;
                 }
 
-                if (confirm('¿Eliminar este usuario?')) {
+                const result = await Swal.fire({
+                    title: '¿Eliminar usuario?',
+                    text: "Esta acción eliminará permanentemente al usuario",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ff4757',
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar'
+                });
+
+                if (result.isConfirmed) {
                     const { error } = await _supabase
                         .from('usuarios')
                         .delete()
                         .eq('id', userId);
 
-                    if (error) alert('Error al eliminar');
-                    else loadUsers();
+                    if (error) {
+                        Swal.fire('Error', 'No se pudo eliminar al usuario', 'error');
+                    } else {
+                        Swal.fire('Eliminado', 'Usuario borrado con éxito', 'success');
+                        loadUsers();
+                    }
                 }
             });
 

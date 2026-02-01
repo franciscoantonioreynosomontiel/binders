@@ -180,6 +180,8 @@ async function renderAlbum(album) {
         if (turnInitialized) return;
         turnInitialized = true;
 
+        const isMobile = window.innerWidth <= 640;
+
         $albumDiv.turn({
             width: 600,
             height: 420,
@@ -188,7 +190,9 @@ async function renderAlbum(album) {
             acceleration: true,
             display: 'double',
             elevation: 0,
-            duration: 600
+            duration: 600,
+            // Increase corner size on mobile for easier flipping
+            cornerSize: isMobile ? 80 : 50
         });
     };
 
