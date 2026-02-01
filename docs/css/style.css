@@ -667,10 +667,8 @@ body {
     }
 
     .album-wrapper {
-        width: 100cqw;
-        max-width: 600px;
-        /* Calculate height to maintain 600:420 aspect ratio based on actual width */
-        height: calc(min(600px, 100cqw) * 420 / 600);
+        width: 100%;
+        height: auto;
         margin: 20px auto;
         position: relative;
         overflow: visible;
@@ -681,16 +679,22 @@ body {
     }
 
     .album {
-        --scale: calc(min(600px, 100cqw - 10px) / 600);
-        transform: scale(var(--scale)) !important;
-        transform-origin: center center;
-        flex: 0 0 auto;
-        margin: 0 !important;
+        margin: 0 auto !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     }
 
     .public-album-item {
-        padding: 15px 5px;
-        overflow: hidden;
+        padding: 10px 0;
+        overflow: visible;
+        background: none;
+        border: none;
+        box-shadow: none;
+    }
+
+    .public-album-header {
+        justify-content: center;
+        font-size: 1.2rem;
+        border-bottom: 1px solid rgba(0, 210, 255, 0.2);
     }
 
     .info-grid {
