@@ -680,7 +680,7 @@ body {
 
     .album {
         margin: 0 auto !important;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.5);
     }
 
     .public-album-item {
@@ -695,6 +695,14 @@ body {
         justify-content: center;
         font-size: 1.2rem;
         border-bottom: 1px solid rgba(0, 210, 255, 0.2);
+    }
+
+    .page {
+        padding: 4px;
+    }
+
+    .grid-container {
+        gap: 3px;
     }
 
     .info-grid {
