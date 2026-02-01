@@ -345,7 +345,7 @@ async function loadAlbumPages(albumId) {
                     Página ${page.page_index + 1}
                     <button class="btn btn-danger btn-sm btn-delete-page" data-id="${page.id}">Eliminar Página</button>
                 </h3>
-                <div class="grid-container" style="height: 300px; max-width: 400px; margin: 0 auto;">
+                <div class="grid-container admin-grid-preview">
                     <!-- 9 Slots -->
                 </div>
             </div>
