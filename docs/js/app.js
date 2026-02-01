@@ -187,12 +187,12 @@ async function renderAlbum(album) {
         let display = 'double';
 
         if (isMobile) {
-            display = 'single';
-            // Use 95% of the container width to leave some margin
+            display = 'double';
+            // Use nearly 100% of the container width to maximize space for the 6 columns
             const containerWidth = $albumContainer.width() || window.innerWidth;
-            width = Math.min(300, containerWidth * 0.95);
-            // Maintain 300:420 aspect ratio for a single page
-            height = (width / 300) * 420;
+            width = containerWidth * 0.98;
+            // Maintain 600:420 aspect ratio for the full open folder (two pages)
+            height = (width / 600) * 420;
         }
 
         $albumDiv.turn({
