@@ -182,17 +182,30 @@ async function renderAlbum(album) {
 
         const isMobile = window.innerWidth <= 640;
 
+        let width = 600;
+        let height = 420;
+        let display = 'double';
+
+        if (isMobile) {
+            display = 'single';
+            // Use 95% of the container width to leave some margin
+            const containerWidth = $albumContainer.width() || window.innerWidth;
+            width = Math.min(300, containerWidth * 0.95);
+            // Maintain 300:420 aspect ratio for a single page
+            height = (width / 300) * 420;
+        }
+
         $albumDiv.turn({
-            width: 600,
-            height: 420,
+            width: width,
+            height: height,
             autoCenter: false,
             gradients: true,
-            acceleration: true,
-            display: 'double',
+            acceleration: false, // Set to false to prevent displacement issues on some browsers
+            display: display,
             elevation: 0,
             duration: 600,
             // Increase corner size on mobile for easier flipping
-            cornerSize: isMobile ? 80 : 50
+            cornerSize: isMobile ? 120 : 50
         });
     };
 
