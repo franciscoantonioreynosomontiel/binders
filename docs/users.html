@@ -22,11 +22,11 @@
         <table class="user-table">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Nombre de Usuario</th>
                     <th>Contraseña</th>
                     <th>Nombre de Tienda</th>
-                    <th>Fecha de Registro</th>
+                    <th>Rol</th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody id="user-list-body">
@@ -65,17 +65,70 @@
 
             $('#user-list-body').empty();
             users.forEach(user => {
-                const date = new Date(user.created_at).toLocaleString();
                 const $row = $(`
-                    <tr>
-                        <td>${user.id}</td>
+                    <tr data-id="${user.id}">
                         <td>${user.username}</td>
                         <td>${user.password}</td>
                         <td>${user.store_name || '-'}</td>
-                        <td>${date}</td>
+                        <td>
+                            <select class="role-select" data-id="${user.id}" style="background: #252525; color: white; border: 1px solid #3d3d3d; padding: 5px; border-radius: 4px;">
+                                <option value="user" ${user.role === 'user' ? 'selected' : ''}>Usuario</option>
+                                <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
+                            </select>
+                        </td>
+                        <td>
+                            <button class="btn btn-danger btn-sm btn-delete-user" data-id="${user.id}"><i class="fas fa-trash"></i></button>
+                        </td>
                     </tr>
                 `);
                 $('#user-list-body').append($row);
+            });
+
+            // Role Change Event
+            $(document).on('change', '.role-select', async function() {
+                const userId = $(this).data('id');
+                const newRole = $(this).val();
+
+                const { error } = await _supabase
+                    .from('usuarios')
+                    .update({ role: newRole })
+                    .eq('id', userId);
+
+                if (error) {
+                    alert('Error al actualizar rol');
+                    console.error(error);
+                } else {
+                    // Update current session if changed own role
+                    if (userId === currentUser.id) {
+                        currentUser.role = newRole;
+                        localStorage.setItem('tcg_session', JSON.stringify(currentUser));
+                    }
+                    alert('Rol actualizado con éxito');
+                }
+            });
+
+            // Delete User Event
+            $(document).on('click', '.btn-delete-user', async function() {
+                const userId = $(this).data('id');
+                if (userId === currentUser.id) {
+                    alert('No puedes eliminarte a ti mismo.');
+                    return;
+                }
+
+                if (confirm('¿Estás seguro de eliminar este usuario? Sus álbumes también se eliminarán.')) {
+                    const { error } = await _supabase
+                        .from('usuarios')
+                        .delete()
+                        .eq('id', userId);
+
+                    if (error) {
+                        alert('Error al eliminar usuario');
+                        console.error(error);
+                    } else {
+                        $(`tr[data-id="${userId}"]`).remove();
+                        alert('Usuario eliminado');
+                    }
+                }
             });
 
             $('#btn-logout').click(function() {
