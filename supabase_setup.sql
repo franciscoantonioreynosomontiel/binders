@@ -18,6 +18,11 @@ BEGIN
     END IF;
 END $$;
 
--- 3. Habilitar RLS (Opcional, pero recomendado para seguridad básica)
+-- 3. Crear un usuario administrador por defecto (Opcional)
+INSERT INTO usuarios (username, password, store_name, role)
+VALUES ('admin', 'admin123', 'AdminStore', 'admin')
+ON CONFLICT (username) DO NOTHING;
+
+-- 4. Habilitar RLS (Opcional, pero recomendado para seguridad básica)
 -- Por ahora, como el usuario dijo que no importa la seguridad, lo dejaremos abierto
 -- o con políticas simples si es necesario.
