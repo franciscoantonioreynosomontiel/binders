@@ -65,6 +65,7 @@ body {
     margin: 0 auto !important;
     left: 0 !important;
     top: 0 !important;
+    transform: translate(0, 0) !important;
     will-change: transform;
     touch-action: none !important;
     backface-visibility: hidden;

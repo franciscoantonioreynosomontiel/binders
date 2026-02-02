@@ -1,3 +1,6 @@
+let isDraggingCard = false;
+let startX, startY;
+
 $(document).ready(async function() {
     if ($.isTouch === undefined) {
         $.isTouch = 'ontouchstart' in window;
@@ -18,19 +21,32 @@ $(document).ready(async function() {
     }
 
     // Drag detection for cards (shared across views if needed)
-    let isDraggingCard = false;
-    let startX, startY;
     $(document).on("touchstart mousedown", ".card-slot", function(e) {
         isDraggingCard = false;
         const touch = e.originalEvent.touches ? e.originalEvent.touches[0] : e;
         startX = touch.pageX;
         startY = touch.pageY;
+
+        // Stop propagation to prevent Turn.js from catching this as a start of a flip
+        if ($(this).closest('.album').length > 0) {
+            e.stopPropagation();
+        }
     });
+
     $(document).on("touchmove mousemove", ".card-slot", function(e) {
+        if (startX === undefined || startY === undefined) return;
         const touch = e.originalEvent.touches ? e.originalEvent.touches[0] : e;
-        if (Math.abs(touch.pageX - startX) > 5 || Math.abs(touch.pageY - startY) > 5) {
+        if (Math.abs(touch.pageX - startX) > 10 || Math.abs(touch.pageY - startY) > 10) {
             isDraggingCard = true;
         }
+    });
+
+    $(document).on("touchend mouseup", function() {
+        setTimeout(() => {
+            isDraggingCard = false;
+            startX = undefined;
+            startY = undefined;
+        }, 50);
     });
 
     // Delegated fallback for any dynamically added slots that aren't caught by direct binding
@@ -296,13 +312,9 @@ async function loadPublicDecks() {
         });
 
         $deckItem.find('.card-slot').on('click', function(e) {
+            if (isDraggingCard) return;
             $(this).data('handled', true);
-            if (window.innerWidth <= 640) {
-                e.stopPropagation();
-            }
-            if (!isDraggingCard) {
-                openCardModal($(this));
-            }
+            openCardModal($(this));
         });
     });
 }
@@ -345,15 +357,11 @@ async function renderAlbum(album) {
             const slotData = slots ? slots.find(s => s.slot_index === i) : null;
             const $slot = $('<div class="card-slot"></div>');
 
-            // Direct binding to ensure modal opens and propagation is controlled
+            // Direct binding to ensure modal opens
             $slot.on('click', function(e) {
+                if (isDraggingCard) return;
                 $(this).data('handled', true);
-                if (window.innerWidth <= 640) {
-                    e.stopPropagation();
-                }
-                if (!isDraggingCard) {
-                    openCardModal($(this));
-                }
+                openCardModal($(this));
             });
 
             if (slotData) {
@@ -386,17 +394,32 @@ async function renderAlbum(album) {
         turnInitialized = true;
         const isMobile = window.innerWidth <= 640;
         let width = 600, height = 420;
+
+        const $wrapper = $albumContainer.find('.album-wrapper');
+
         if (isMobile) {
-            width = ($albumContainer.width() || window.innerWidth) * 0.98;
+            width = ($albumContainer.width() || window.innerWidth) * 0.96;
             height = (width / 600) * 420;
+            $wrapper.css({width: width, height: height});
         }
+
         $albumDiv.turn({
             width: width, height: height,
             autoCenter: false, gradients: true, acceleration: false,
-            display: 'double', elevation: 50, duration: 600,
+            display: 'double', elevation: 0, duration: 600,
             cornerSize: 50,
             when: {
-                start: (e, p, corner) => { if (!corner) e.preventDefault(); }
+                start: function(e, p, corner) {
+                    if (!corner) e.preventDefault();
+                },
+                turning: function(e, page, view) {
+                    // Force stability during transitions
+                    $(this).css({
+                        'left': '0',
+                        'top': '0',
+                        'margin': '0 auto'
+                    });
+                }
             }
         });
     };
