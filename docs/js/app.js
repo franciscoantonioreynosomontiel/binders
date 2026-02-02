@@ -215,9 +215,9 @@ async function renderAlbum(album) {
         $albumDiv.turn({
             width: width,
             height: height,
-            autoCenter: false,
+            autoCenter: true,
             gradients: true,
-            acceleration: true,
+            acceleration: false,
             display: display,
             elevation: 50,
             duration: 600,
@@ -229,6 +229,10 @@ async function renderAlbum(album) {
                     if (!corner) {
                         event.preventDefault();
                     }
+                },
+                turning: function(event, page, view) {
+                    // Prevent any unwanted displacement during turning
+                    $(this).css({left: 0, top: 0});
                 }
             }
         });
