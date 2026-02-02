@@ -50,12 +50,32 @@ CREATE TABLE IF NOT EXISTS card_slots (
 );
 
 -- 6. Desactivar RLS para simplificar (Opcional, pero recomendado para este proyecto según petición del usuario)
+-- 6. Crear tabla de Decks
+CREATE TABLE IF NOT EXISTS decks (
+    id SERIAL PRIMARY KEY,
+    user_id UUID REFERENCES usuarios(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- 7. Crear tabla de Cartas en Decks
+CREATE TABLE IF NOT EXISTS deck_cards (
+    id SERIAL PRIMARY KEY,
+    deck_id INTEGER REFERENCES decks(id) ON DELETE CASCADE,
+    image_url TEXT NOT NULL,
+    card_order INTEGER DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- 8. Desactivar RLS para simplificar (Opcional, pero recomendado para este proyecto según petición del usuario)
 ALTER TABLE usuarios DISABLE ROW LEVEL SECURITY;
 ALTER TABLE albums DISABLE ROW LEVEL SECURITY;
 ALTER TABLE pages DISABLE ROW LEVEL SECURITY;
 ALTER TABLE card_slots DISABLE ROW LEVEL SECURITY;
+ALTER TABLE decks DISABLE ROW LEVEL SECURITY;
+ALTER TABLE deck_cards DISABLE ROW LEVEL SECURITY;
 
--- 7. Crear usuario Administrador por defecto (Opcional)
+-- 9. Crear usuario Administrador por defecto (Opcional)
 -- Cambia 'admin123' por una contraseña segura
 INSERT INTO usuarios (username, password, store_name, role)
 VALUES ('admin', 'admin123', 'AdminStore', 'admin')

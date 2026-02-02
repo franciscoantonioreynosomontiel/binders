@@ -3,53 +3,21 @@ $(document).ready(async function() {
         $.isTouch = 'ontouchstart' in window;
     }
 
-    // Check if we are in public view
     const urlParams = new URLSearchParams(window.location.search);
-    const storeName = urlParams.get('store');
+    const initialView = urlParams.get('view') || 'albums';
 
-    let query = _supabase.from('albums').select('*');
+    loadStoreData();
 
-    if (storeName) {
-        // Find user by store name
-        const { data: userData, error: userError } = await _supabase
-            .from('usuarios')
-            .select('id, store_name')
-            .eq('store_name', storeName)
-            .single();
+    $('.nav-btn').click(function() {
+        const view = $(this).data('view');
+        switchView(view);
+    });
 
-        if (userError || !userData) {
-            console.error('Store not found:', storeName);
-            $('#albums-container').html('<div class="error">Tienda no encontrada.</div>');
-            return;
-        }
-
-        $('#public-store-name').text(`Tienda: ${userData.store_name}`);
-        query = query.eq('user_id', userData.id);
-    } else {
-        // If no store param, just hide the title if it exists
-        $('#public-store-name').hide();
+    if (initialView === 'decks') {
+        switchView('decks');
     }
 
-    const { data: albums, error: albumError } = await query.order('id', { ascending: true });
-
-    if (albumError) {
-        console.error('Error fetching albums:', albumError);
-        $('#albums-container').html('<div class="error">Error al cargar álbumes.</div>');
-        return;
-    }
-
-    if (albums.length === 0) {
-        $('#albums-container').html('<div class="empty">No hay álbumes disponibles en esta tienda.</div>');
-        return;
-    }
-
-    $('#albums-container').empty();
-
-    for (const album of albums) {
-        await renderAlbum(album);
-    }
-
-    // Drag detection for cards
+    // Drag detection for cards (shared across views if needed)
     let isDraggingCard = false;
     let startX, startY;
     $(document).on("touchstart mousedown", ".card-slot", function(e) {
@@ -98,6 +66,140 @@ $(document).ready(async function() {
     });
 });
 
+async function switchView(view) {
+    $('.nav-btn').removeClass('active');
+    $(`.nav-btn[data-view="${view}"]`).addClass('active');
+
+    $('.view-section').removeClass('active');
+    $(`#${view}-view`).addClass('active');
+
+    if (view === 'albums') {
+        $('#public-view-title').text('Colección de Álbumes');
+    } else {
+        $('#public-view-title').text('Decks de Cartas');
+        loadPublicDecks();
+    }
+
+    const url = new URL(window.location);
+    url.searchParams.set('view', view);
+    window.history.pushState({}, '', url);
+}
+
+async function loadStoreData() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const storeName = urlParams.get('store');
+
+    if (!storeName) {
+        $('#public-store-name').hide();
+        return;
+    }
+
+    const { data: userData, error: userError } = await _supabase
+        .from('usuarios')
+        .select('id, store_name')
+        .eq('store_name', storeName)
+        .single();
+
+    if (userError || !userData) {
+        $('#albums-container').html('<div class="error">Tienda no encontrada.</div>');
+        return;
+    }
+
+    $('#public-store-name').text(`Tienda: ${userData.store_name}`);
+
+    // Load Albums
+    loadPublicAlbums(userData.id);
+}
+
+async function loadPublicAlbums(userId) {
+    const { data: albums, error } = await _supabase
+        .from('albums')
+        .select('*')
+        .eq('user_id', userId)
+        .order('id', { ascending: true });
+
+    if (error) {
+        $('#albums-container').html('<div class="error">Error al cargar álbumes.</div>');
+        return;
+    }
+
+    if (albums.length === 0) {
+        $('#albums-container').html('<div class="empty">No hay álbumes disponibles.</div>');
+        return;
+    }
+
+    $('#albums-container').empty();
+    for (const album of albums) {
+        await renderAlbum(album);
+    }
+}
+
+async function loadPublicDecks() {
+    const storeName = new URLSearchParams(window.location.search).get('store');
+    if (!storeName) return;
+
+    $('#decks-container').html('<div class="loading">Cargando decks...</div>');
+
+    const { data: user } = await _supabase
+        .from('usuarios')
+        .select('id')
+        .eq('store_name', storeName)
+        .single();
+
+    if (!user) return;
+
+    const { data: decks, error } = await _supabase
+        .from('decks')
+        .select(`
+            *,
+            deck_cards (*)
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+    if (error || !decks) {
+        $('#decks-container').html('<div class="error">No se pudieron cargar los decks.</div>');
+        return;
+    }
+
+    $('#decks-container').empty();
+    if (decks.length === 0) {
+        $('#decks-container').html('<div class="empty">Esta tienda aún no tiene decks públicos.</div>');
+        return;
+    }
+
+    decks.forEach(deck => {
+        const deckId = `deck-swiper-${deck.id}`;
+        const $deckItem = $(`
+            <div class="deck-public-item">
+                <h3>${deck.name}</h3>
+                <div class="container">
+                    <div class="swiper swiperyg ${deckId}">
+                        <div class="swiper-wrapper">
+                            ${deck.deck_cards.map(card => `
+                                <div class="swiper-slide">
+                                    <img src="${card.image_url}" alt="Card" />
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `);
+
+        $('#decks-container').append($deckItem);
+
+        new Swiper(`.${deckId}`, {
+            effect: "cards",
+            grabCursor: true,
+            perSlideOffset: 8,
+            perSlideRotate: 2,
+            rotate: true,
+            slideShadows: true,
+        });
+    });
+}
+
 async function renderAlbum(album) {
     const $albumContainer = $(`
         <div class="public-album-item">
@@ -109,145 +211,81 @@ async function renderAlbum(album) {
             </div>
         </div>
     `);
-    
+
     const $albumDiv = $albumContainer.find('.album');
     $('#albums-container').append($albumContainer);
 
-    // Fetch pages for this album
-    const { data: pages, error: pageError } = await _supabase
+    const { data: pages } = await _supabase
         .from('pages')
         .select('*')
         .eq('album_id', album.id)
         .order('page_index', { ascending: true });
 
-    if (pageError) {
-        console.error(`Error fetching pages for album ${album.id}:`, pageError);
-        return;
-    }
-
-    // Front cover page
     const coverImg = album.cover_image_url || 'https://via.placeholder.com/600x840?text=Portada';
-    const $coverPage = $(`
-        <div class="page cover-page">
-            <img src="${coverImg}" alt="${album.title}">
-        </div>
-    `);
-    $albumDiv.append($coverPage);
+    $albumDiv.append(`<div class="page cover-page"><img src="${coverImg}"></div>`);
 
-    // Regular pages
     for (const page of pages) {
         const $pageDiv = $('<div class="page"></div>');
         const $grid = $('<div class="grid-container"></div>');
         
-        // Fetch card slots for this page
-        const { data: slots, error: slotError } = await _supabase
+        const { data: slots } = await _supabase
             .from('card_slots')
             .select('*')
             .eq('page_id', page.id)
             .order('slot_index', { ascending: true });
 
-        if (slotError) {
-            console.error(`Error fetching slots for page ${page.id}:`, slotError);
-        }
-
-        // Create 9 slots
         for (let i = 0; i < 9; i++) {
             const slotData = slots ? slots.find(s => s.slot_index === i) : null;
             const $slot = $('<div class="card-slot"></div>');
-            
             if (slotData) {
-                $slot.attr('data-name', slotData.name || '');
-                $slot.attr('data-rarity', slotData.rarity || '');
-                $slot.attr('data-expansion', slotData.expansion || '');
-                $slot.attr('data-condition', slotData.condition || '');
-                $slot.attr('data-quantity', slotData.quantity || '');
-                $slot.attr('data-price', slotData.price || '');
-                
-                if (slotData.image_url) {
-                    $slot.append(`<img src="${slotData.image_url}" class="tcg-card">`);
-                }
+                $slot.attr({
+                    'data-name': slotData.name || '',
+                    'data-rarity': slotData.rarity || '',
+                    'data-expansion': slotData.expansion || '',
+                    'data-condition': slotData.condition || '',
+                    'data-quantity': slotData.quantity || '',
+                    'data-price': slotData.price || ''
+                });
+                if (slotData.image_url) $slot.append(`<img src="${slotData.image_url}" class="tcg-card">`);
             }
-            
             $grid.append($slot);
         }
-
-        $pageDiv.append($grid);
-        $albumDiv.append($pageDiv);
+        $pageDiv.append($grid).appendTo($albumDiv);
     }
 
-    // Back cover
-    const totalPagesIncludingCover = pages.length + 1;
-    if (totalPagesIncludingCover % 2 !== 0) {
+    if ((pages.length + 1) % 2 !== 0) {
         const backImg = album.back_image_url || 'https://via.placeholder.com/600x840?text=Contraportada';
-        const $backPage = $(`
-            <div class="page cover-page">
-                <img src="${backImg}" alt="Back Cover">
-            </div>
-        `);
-        $albumDiv.append($backPage);
+        $albumDiv.append(`<div class="page cover-page"><img src="${backImg}"></div>`);
     }
 
-    // Initialize turn.js after images are loaded or after a timeout
     const $images = $albumDiv.find('img');
     let loadedCount = 0;
-    const totalImages = $images.length;
     let turnInitialized = false;
 
     const initTurn = () => {
         if (turnInitialized) return;
         turnInitialized = true;
-
         const isMobile = window.innerWidth <= 640;
-
-        let width = 600;
-        let height = 420;
-        let display = 'double';
-
+        let width = 600, height = 420;
         if (isMobile) {
-            display = 'double';
-            // Use nearly 100% of the container width to maximize space for the 6 columns
-            const containerWidth = $albumContainer.width() || window.innerWidth;
-            width = containerWidth * 0.98;
-            // Maintain 600:420 aspect ratio for the full open folder (two pages)
+            width = ($albumContainer.width() || window.innerWidth) * 0.98;
             height = (width / 600) * 420;
         }
-
         $albumDiv.turn({
-            width: width,
-            height: height,
-            autoCenter: true,
-            gradients: true,
-            acceleration: false,
-            display: display,
-            elevation: 50,
-            duration: 600,
-            // Increase corner size on mobile for easier flipping
+            width: width, height: height,
+            autoCenter: true, gradients: true, acceleration: false,
+            display: 'double', elevation: 50, duration: 600,
             cornerSize: isMobile ? 150 : 50,
             when: {
-                start: function(event, pageObject, corner) {
-                    // If corner is null or undefined, it's a click-to-turn
-                    if (!corner) {
-                        event.preventDefault();
-                    }
-                },
-                turning: function(event, page, view) {
-                    // Prevent any unwanted displacement during turning
-                    $(this).css({left: 0, top: 0});
-                }
+                start: (e, p, corner) => { if (!corner) e.preventDefault(); },
+                turning: function() { $(this).css({left:0, top:0}); }
             }
         });
     };
 
-    if (totalImages === 0) {
-        setTimeout(initTurn, 150);
-    } else {
-        $images.on('load error', function() {
-            loadedCount++;
-            if (loadedCount >= totalImages) {
-                setTimeout(initTurn, 200);
-            }
-        });
-        // Fallback for slow images
+    if ($images.length === 0) setTimeout(initTurn, 150);
+    else {
+        $images.on('load error', () => { if (++loadedCount >= $images.length) setTimeout(initTurn, 200); });
         setTimeout(initTurn, 1500);
     }
 }
