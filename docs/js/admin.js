@@ -1,4 +1,5 @@
 let currentAlbumId = null;
+let currentDeckId = null;
 let currentSlotIndex = null;
 let currentPageId = null;
 let currentUser = null;
@@ -14,6 +15,11 @@ $(document).ready(function() {
     $('#btn-dashboard').click(function() {
         showView('dashboard');
         loadAlbums();
+    });
+
+    $('#btn-decks').click(function() {
+        showView('decks');
+        loadDecks();
     });
 
     $('#btn-create-album').click(async function() {
@@ -126,6 +132,60 @@ $(document).ready(function() {
     $('#close-slot-modal').click(function() {
         $('#slot-modal').removeClass('active');
     });
+
+    // Deck Management Actions
+    $('#btn-create-deck').click(async function() {
+        if (!currentUser) return;
+
+        const { data, error } = await _supabase
+            .from('decks')
+            .insert([{ name: 'Nuevo Deck', user_id: currentUser.id }])
+            .select();
+
+        if (error) {
+            Swal.fire('Error', 'No se pudo crear el deck', 'error');
+        } else {
+            loadDecks();
+        }
+    });
+
+    $('#btn-save-deck-meta').click(async function() {
+        const name = $('#input-deck-name').val();
+
+        const { error } = await _supabase
+            .from('decks')
+            .update({ name })
+            .eq('id', currentDeckId);
+
+        if (error) {
+            Swal.fire('Error', 'No se pudo actualizar el deck', 'error');
+        } else {
+            Swal.fire('¡Éxito!', 'Nombre del deck actualizado', 'success');
+            loadDecks();
+        }
+    });
+
+    $('#btn-add-deck-card').click(async function() {
+        const { value: url } = await Swal.fire({
+            title: 'Añadir imagen al deck',
+            input: 'url',
+            inputLabel: 'URL de la imagen',
+            inputPlaceholder: 'https://...',
+            showCancelButton: true
+        });
+
+        if (url) {
+            const { error } = await _supabase
+                .from('deck_cards')
+                .insert([{ deck_id: currentDeckId, image_url: url }]);
+
+            if (error) {
+                Swal.fire('Error', 'No se pudo añadir la imagen', 'error');
+            } else {
+                loadDeckCards(currentDeckId);
+            }
+        }
+    });
 });
 
 // Auth Functions
@@ -231,6 +291,107 @@ function copyPublicLink() {
 }
 
 // Data Functions
+// Deck Functions
+async function loadDecks() {
+    $('#deck-list').html('<div class="loading">Cargando decks...</div>');
+
+    const { data: decks, error } = await _supabase
+        .from('decks')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .order('id', { ascending: true });
+
+    if (error) {
+        $('#deck-list').html('<div class="error">Error al cargar decks.</div>');
+        return;
+    }
+
+    $('#deck-list').empty();
+    if (decks.length === 0) {
+        $('#deck-list').html('<div class="empty">No tienes decks. Crea uno para empezar.</div>');
+        return;
+    }
+
+    decks.forEach(deck => {
+        const $card = $(`
+            <div class="album-card">
+                <div class="deck-preview-icon"><i class="fas fa-layer-group fa-3x"></i></div>
+                <h3>${deck.name}</h3>
+                <div style="display:flex; gap:10px; margin-top:auto;">
+                    <button class="btn btn-edit-deck" data-id="${deck.id}">Editar</button>
+                    <button class="btn btn-danger btn-delete-deck" data-id="${deck.id}">Eliminar</button>
+                </div>
+            </div>
+        `);
+
+        $card.find('.btn-edit-deck').click(() => editDeck(deck));
+        $card.find('.btn-delete-deck').click(() => deleteDeck(deck.id));
+
+        $('#deck-list').append($card);
+    });
+}
+
+async function editDeck(deck) {
+    currentDeckId = deck.id;
+    $('#deck-editor-title').text(`Editando: ${deck.name}`);
+    $('#input-deck-name').val(deck.name);
+
+    showView('deck-editor');
+    loadDeckCards(deck.id);
+}
+
+async function deleteDeck(id) {
+    const result = await Swal.fire({
+        title: '¿Eliminar deck?',
+        text: "Se eliminará el deck y todas sus cartas",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ff4757',
+        confirmButtonText: 'Sí, eliminar'
+    });
+
+    if (result.isConfirmed) {
+        const { error } = await _supabase.from('decks').delete().eq('id', id);
+        if (error) {
+            Swal.fire('Error', 'No se pudo eliminar el deck', 'error');
+        } else {
+            loadDecks();
+        }
+    }
+}
+
+async function loadDeckCards(deckId) {
+    $('#deck-card-list').html('<div class="loading">Cargando imágenes...</div>');
+
+    const { data: cards, error } = await _supabase
+        .from('deck_cards')
+        .select('*')
+        .eq('deck_id', deckId)
+        .order('id', { ascending: true });
+
+    if (error) {
+        $('#deck-card-list').html('<div class="error">Error al cargar imágenes.</div>');
+        return;
+    }
+
+    $('#deck-card-list').empty();
+    cards.forEach(card => {
+        const $cardItem = $(`
+            <div class="album-card deck-card-item">
+                <img src="${card.image_url}" style="width:100%; height:150px; object-fit:contain;">
+                <button class="btn btn-danger btn-sm btn-delete-deck-card" style="margin-top:10px;">Eliminar</button>
+            </div>
+        `);
+
+        $cardItem.find('.btn-delete-deck-card').click(async () => {
+            await _supabase.from('deck_cards').delete().eq('id', card.id);
+            loadDeckCards(deckId);
+        });
+
+        $('#deck-card-list').append($cardItem);
+    });
+}
+
 async function loadAlbums() {
     $('#album-list').html('<div class="loading">Cargando álbumes...</div>');
 
