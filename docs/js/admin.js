@@ -1,8 +1,10 @@
 let currentAlbumId = null;
 let currentDeckId = null;
+let currentDeckCardId = null; // New for deck card editing
 let currentSlotIndex = null;
 let currentPageId = null;
 let currentUser = null;
+let editingType = 'slot'; // 'slot' or 'deck-card'
 
 $(document).ready(function() {
     checkSession();
@@ -97,9 +99,7 @@ $(document).ready(function() {
     });
 
     $('#btn-save-slot').click(async function() {
-        const slotData = {
-            page_id: currentPageId,
-            slot_index: currentSlotIndex,
+        const cardData = {
             image_url: $('#slot-image-url').val(),
             name: $('#slot-name').val(),
             rarity: $('#slot-rarity').val(),
@@ -109,9 +109,20 @@ $(document).ready(function() {
             price: $('#slot-price').val()
         };
 
-        const { error } = await _supabase
-            .from('card_slots')
-            .upsert(slotData, { onConflict: 'page_id,slot_index' });
+        let error;
+        if (editingType === 'slot') {
+            const slotData = { ...cardData, page_id: currentPageId, slot_index: currentSlotIndex };
+            const result = await _supabase
+                .from('card_slots')
+                .upsert(slotData, { onConflict: 'page_id,slot_index' });
+            error = result.error;
+        } else {
+            const result = await _supabase
+                .from('deck_cards')
+                .update(cardData)
+                .eq('id', currentDeckCardId);
+            error = result.error;
+        }
 
         if (error) {
             Swal.fire('Error', 'No se pudo guardar la información de la carta', 'error');
@@ -125,7 +136,11 @@ $(document).ready(function() {
                 showConfirmButton: false
             });
             $('#slot-modal').removeClass('active');
-            loadAlbumPages(currentAlbumId);
+            if (editingType === 'slot') {
+                loadAlbumPages(currentAlbumId);
+            } else {
+                loadDeckCards(currentDeckId);
+            }
         }
     });
 
@@ -377,19 +392,49 @@ async function loadDeckCards(deckId) {
     $('#deck-card-list').empty();
     cards.forEach(card => {
         const $cardItem = $(`
-            <div class="album-card deck-card-item">
+            <div class="album-card deck-card-item" style="cursor:pointer;">
                 <img src="${card.image_url}" style="width:100%; height:150px; object-fit:contain;">
+                <div style="font-size: 12px; margin-top: 5px; color: #aaa; text-align: center;">${card.name || 'Sin nombre'}</div>
                 <button class="btn btn-danger btn-sm btn-delete-deck-card" style="margin-top:10px;">Eliminar</button>
             </div>
         `);
 
-        $cardItem.find('.btn-delete-deck-card').click(async () => {
-            await _supabase.from('deck_cards').delete().eq('id', card.id);
-            loadDeckCards(deckId);
+        $cardItem.click((e) => {
+            if ($(e.target).hasClass('btn-delete-deck-card')) return;
+            editDeckCard(card);
+        });
+
+        $cardItem.find('.btn-delete-deck-card').click(async (e) => {
+            e.stopPropagation();
+            const res = await Swal.fire({
+                title: '¿Eliminar carta?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí'
+            });
+            if (res.isConfirmed) {
+                await _supabase.from('deck_cards').delete().eq('id', card.id);
+                loadDeckCards(deckId);
+            }
         });
 
         $('#deck-card-list').append($cardItem);
     });
+}
+
+function editDeckCard(card) {
+    editingType = 'deck-card';
+    currentDeckCardId = card.id;
+
+    $('#slot-image-url').val(card.image_url || '');
+    $('#slot-name').val(card.name || '');
+    $('#slot-rarity').val(card.rarity || '');
+    $('#slot-expansion').val(card.expansion || '');
+    $('#slot-condition').val(card.condition || '');
+    $('#slot-quantity').val(card.quantity || 1);
+    $('#slot-price').val(card.price || '');
+
+    $('#slot-modal').addClass('active');
 }
 
 async function loadAlbums() {
