@@ -33,36 +33,13 @@ $(document).ready(async function() {
         }
     });
 
-    // Modal logic
+    // Delegated fallback for any dynamically added slots that aren't caught by direct binding
     $(document).on("click", ".card-slot", function(e) {
         if (isDraggingCard) return;
-
-        // Prevent event from bubbling to Turn.js to avoid accidental flips on mobile
-        if (window.innerWidth <= 640) {
-            e.stopPropagation();
+        // Only trigger if not already handled by direct binding to avoid double modals
+        if (!$(this).data('handled')) {
+            openCardModal($(this));
         }
-
-        const $slot = $(this);
-        const imgSrc = $slot.find("img").attr("src");
-        
-        if (!imgSrc || imgSrc.includes('placeholder')) return;
-
-        const name = $slot.data("name") || "Carta de Colección";
-        const rarity = $slot.data("rarity") || "-";
-        const expansion = $slot.data("expansion") || "-";
-        const condition = $slot.data("condition") || "-";
-        const quantity = $slot.data("quantity") || "1";
-        const price = $slot.data("price") || "-";
-
-        $("#expanded-image").attr("src", imgSrc);
-        $("#card-name").text(name);
-        $("#card-rarity").text(rarity);
-        $("#card-expansion").text(expansion);
-        $("#card-condition").text(condition);
-        $("#card-quantity").text(quantity);
-        $("#card-price").text(price);
-
-        $("#image-overlay").addClass("active");
     });
 
     $(document).on("click", "#close-btn, #image-overlay", function(e) {
@@ -155,6 +132,29 @@ function filterContent(query) {
 
 function resetFilter() {
     $('.public-album-item, .deck-public-item').show();
+}
+
+function openCardModal($slot) {
+    const imgSrc = $slot.find("img").attr("src");
+
+    if (!imgSrc || imgSrc.includes('placeholder')) return;
+
+    const name = $slot.data("name") || "Carta de Colección";
+    const rarity = $slot.data("rarity") || "-";
+    const expansion = $slot.data("expansion") || "-";
+    const condition = $slot.data("condition") || "-";
+    const quantity = $slot.data("quantity") || "1";
+    const price = $slot.data("price") || "-";
+
+    $("#expanded-image").attr("src", imgSrc);
+    $("#card-name").text(name);
+    $("#card-rarity").text(rarity);
+    $("#card-expansion").text(expansion);
+    $("#card-condition").text(condition);
+    $("#card-quantity").text(quantity);
+    $("#card-price").text(price);
+
+    $("#image-overlay").addClass("active");
 }
 
 async function switchView(view) {
@@ -296,8 +296,12 @@ async function loadPublicDecks() {
         });
 
         $deckItem.find('.card-slot').on('click', function(e) {
+            $(this).data('handled', true);
             if (window.innerWidth <= 640) {
                 e.stopPropagation();
+            }
+            if (!isDraggingCard) {
+                openCardModal($(this));
             }
         });
     });
@@ -341,10 +345,14 @@ async function renderAlbum(album) {
             const slotData = slots ? slots.find(s => s.slot_index === i) : null;
             const $slot = $('<div class="card-slot"></div>');
 
-            // Stop propagation on mobile to avoid Turn.js flipping the page on click
+            // Direct binding to ensure modal opens and propagation is controlled
             $slot.on('click', function(e) {
+                $(this).data('handled', true);
                 if (window.innerWidth <= 640) {
                     e.stopPropagation();
+                }
+                if (!isDraggingCard) {
+                    openCardModal($(this));
                 }
             });
 
