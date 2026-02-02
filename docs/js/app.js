@@ -34,8 +34,14 @@ $(document).ready(async function() {
     });
 
     // Modal logic
-    $(document).on("click", ".card-slot", function() {
+    $(document).on("click", ".card-slot", function(e) {
         if (isDraggingCard) return;
+
+        // Prevent event from bubbling to Turn.js to avoid accidental flips on mobile
+        if (window.innerWidth <= 640) {
+            e.stopPropagation();
+        }
+
         const $slot = $(this);
         const imgSrc = $slot.find("img").attr("src");
         
@@ -288,6 +294,12 @@ async function loadPublicDecks() {
             rotate: true,
             slideShadows: true,
         });
+
+        $deckItem.find('.card-slot').on('click', function(e) {
+            if (window.innerWidth <= 640) {
+                e.stopPropagation();
+            }
+        });
     });
 }
 
@@ -328,6 +340,14 @@ async function renderAlbum(album) {
         for (let i = 0; i < 9; i++) {
             const slotData = slots ? slots.find(s => s.slot_index === i) : null;
             const $slot = $('<div class="card-slot"></div>');
+
+            // Stop propagation on mobile to avoid Turn.js flipping the page on click
+            $slot.on('click', function(e) {
+                if (window.innerWidth <= 640) {
+                    e.stopPropagation();
+                }
+            });
+
             if (slotData) {
                 $slot.attr({
                     'data-name': slotData.name || '',
@@ -366,7 +386,7 @@ async function renderAlbum(album) {
             width: width, height: height,
             autoCenter: false, gradients: true, acceleration: false,
             display: 'double', elevation: 50, duration: 600,
-            cornerSize: isMobile ? 150 : 50,
+            cornerSize: 50,
             when: {
                 start: (e, p, corner) => { if (!corner) e.preventDefault(); }
             }
