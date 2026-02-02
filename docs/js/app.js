@@ -273,12 +273,11 @@ async function renderAlbum(album) {
         }
         $albumDiv.turn({
             width: width, height: height,
-            autoCenter: true, gradients: true, acceleration: false,
+            autoCenter: false, gradients: true, acceleration: false,
             display: 'double', elevation: 50, duration: 600,
             cornerSize: isMobile ? 150 : 50,
             when: {
-                start: (e, p, corner) => { if (!corner) e.preventDefault(); },
-                turning: function() { $(this).css({left:0, top:0}); }
+                start: (e, p, corner) => { if (!corner) e.preventDefault(); }
             }
         });
     };
