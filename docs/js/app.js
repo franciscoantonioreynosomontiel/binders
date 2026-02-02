@@ -49,8 +49,25 @@ $(document).ready(async function() {
         await renderAlbum(album);
     }
 
+    // Drag detection for cards
+    let isDraggingCard = false;
+    let startX, startY;
+    $(document).on("touchstart mousedown", ".card-slot", function(e) {
+        isDraggingCard = false;
+        const touch = e.originalEvent.touches ? e.originalEvent.touches[0] : e;
+        startX = touch.pageX;
+        startY = touch.pageY;
+    });
+    $(document).on("touchmove mousemove", ".card-slot", function(e) {
+        const touch = e.originalEvent.touches ? e.originalEvent.touches[0] : e;
+        if (Math.abs(touch.pageX - startX) > 5 || Math.abs(touch.pageY - startY) > 5) {
+            isDraggingCard = true;
+        }
+    });
+
     // Modal logic
     $(document).on("click", ".card-slot", function() {
+        if (isDraggingCard) return;
         const $slot = $(this);
         const imgSrc = $slot.find("img").attr("src");
         
@@ -138,13 +155,6 @@ async function renderAlbum(album) {
             const slotData = slots ? slots.find(s => s.slot_index === i) : null;
             const $slot = $('<div class="card-slot"></div>');
             
-            // Prevent Turn.js from catching the click on the card slot
-            // We stop mousedown and touchstart to prevent turn.js from starting a flip,
-            // but we let click bubble up for the modal logic.
-            $slot.on("mousedown touchstart", function(e) {
-                e.stopPropagation();
-            });
-
             if (slotData) {
                 $slot.attr('data-name', slotData.name || '');
                 $slot.attr('data-rarity', slotData.rarity || '');
@@ -207,12 +217,12 @@ async function renderAlbum(album) {
             height: height,
             autoCenter: false,
             gradients: true,
-            acceleration: false, // Set to false to prevent displacement issues on some browsers
+            acceleration: true,
             display: display,
-            elevation: 0,
+            elevation: 50,
             duration: 600,
             // Increase corner size on mobile for easier flipping
-            cornerSize: isMobile ? 120 : 50,
+            cornerSize: isMobile ? 150 : 50,
             when: {
                 start: function(event, pageObject, corner) {
                     // If corner is null or undefined, it's a click-to-turn

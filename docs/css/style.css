@@ -57,7 +57,9 @@ body {
     position: relative;
     margin: 0 !important;
     will-change: transform;
-    touch-action: pan-y;
+    touch-action: none !important;
+    backface-visibility: hidden;
+    transform: translate3d(0,0,0);
 }  
 
 /* Ensure internal turn.js pages are properly positioned */
@@ -75,7 +77,7 @@ body {
     overflow: hidden;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
-    transform: translateZ(0);
+    transform: translate3d(0,0,0);
 }  
 
 .cover-page {  
