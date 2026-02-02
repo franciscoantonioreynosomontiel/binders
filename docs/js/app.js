@@ -138,6 +138,13 @@ async function renderAlbum(album) {
             const slotData = slots ? slots.find(s => s.slot_index === i) : null;
             const $slot = $('<div class="card-slot"></div>');
             
+            // Prevent Turn.js from catching the click on the card slot
+            // We stop mousedown and touchstart to prevent turn.js from starting a flip,
+            // but we let click bubble up for the modal logic.
+            $slot.on("mousedown touchstart", function(e) {
+                e.stopPropagation();
+            });
+
             if (slotData) {
                 $slot.attr('data-name', slotData.name || '');
                 $slot.attr('data-rarity', slotData.rarity || '');
@@ -205,7 +212,15 @@ async function renderAlbum(album) {
             elevation: 0,
             duration: 600,
             // Increase corner size on mobile for easier flipping
-            cornerSize: isMobile ? 120 : 50
+            cornerSize: isMobile ? 120 : 50,
+            when: {
+                start: function(event, pageObject, corner) {
+                    // If corner is null or undefined, it's a click-to-turn
+                    if (!corner) {
+                        event.preventDefault();
+                    }
+                }
+            }
         });
     };
 
