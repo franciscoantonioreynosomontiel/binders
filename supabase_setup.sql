@@ -63,6 +63,12 @@ CREATE TABLE IF NOT EXISTS deck_cards (
     id SERIAL PRIMARY KEY,
     deck_id INTEGER REFERENCES decks(id) ON DELETE CASCADE,
     image_url TEXT NOT NULL,
+    name TEXT,
+    rarity TEXT,
+    expansion TEXT,
+    condition TEXT,
+    quantity INTEGER DEFAULT 1,
+    price TEXT,
     card_order INTEGER DEFAULT 0,
     created_at TIMESTAMPTZ DEFAULT now()
 );

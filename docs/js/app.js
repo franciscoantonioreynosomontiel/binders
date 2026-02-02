@@ -64,7 +64,92 @@ $(document).ready(async function() {
             $("#image-overlay").removeClass("active");
         }
     });
+
+    // Search Logic
+    $('#search-input').on('input', function() {
+        const query = $(this).val().toLowerCase().trim();
+        if (query.length > 0) {
+            $('#clear-search').show();
+            filterContent(query);
+        } else {
+            $('#clear-search').hide();
+            resetFilter();
+        }
+    });
+
+    $('#clear-search').click(function() {
+        $('#search-input').val('');
+        $(this).hide();
+        resetFilter();
+    });
 });
+
+function filterContent(query) {
+    const currentView = $('.nav-btn.active').data('view');
+
+    if (currentView === 'albums') {
+        $('.public-album-item').each(function() {
+            const $album = $(this);
+            const albumTitle = $album.find('.public-album-header').text().toLowerCase();
+            let albumMatch = albumTitle.includes(query);
+            let cardMatch = false;
+            let firstMatchPage = -1;
+
+            $album.find('.card-slot').each(function() {
+                const cardName = ($(this).data('name') || '').toLowerCase();
+                if (cardName.includes(query)) {
+                    cardMatch = true;
+                    if (firstMatchPage === -1) {
+                        // Find which page this card is on
+                        const $page = $(this).closest('.page');
+                        firstMatchPage = $page.index() + 1; // Turn.js uses 1-based indexing
+                    }
+                }
+            });
+
+            if (albumMatch || cardMatch) {
+                $album.show();
+                if (cardMatch && firstMatchPage !== -1) {
+                    const $turnAlbum = $album.find('.album');
+                    // Auto-flip to the first matching card's page
+                    if ($turnAlbum.turn('is')) {
+                        $turnAlbum.turn('page', firstMatchPage);
+                    }
+                }
+            } else {
+                $album.hide();
+            }
+        });
+    } else {
+        // Filter Decks
+        $('.deck-public-item').each(function() {
+            const $deck = $(this);
+            const deckName = $deck.find('h3').text().toLowerCase();
+            let deckMatch = deckName.includes(query);
+            let cardMatch = false;
+
+            // In decks we don't have flip pages yet, just Swiper
+            // But we can still search card names if we stored them
+            // Let's check the images/data in the swiper
+            $deck.find('.swiper-slide').each(function() {
+                const cardName = ($(this).find('img').attr('alt') || '').toLowerCase();
+                if (cardName.includes(query)) {
+                    cardMatch = true;
+                }
+            });
+
+            if (deckMatch || cardMatch) {
+                $deck.show();
+            } else {
+                $deck.hide();
+            }
+        });
+    }
+}
+
+function resetFilter() {
+    $('.public-album-item, .deck-public-item').show();
+}
 
 async function switchView(view) {
     $('.nav-btn').removeClass('active');
@@ -177,8 +262,14 @@ async function loadPublicDecks() {
                     <div class="swiper swiperyg ${deckId}">
                         <div class="swiper-wrapper">
                             ${deck.deck_cards.map(card => `
-                                <div class="swiper-slide">
-                                    <img src="${card.image_url}" alt="Card" />
+                                <div class="swiper-slide card-slot"
+                                     data-name="${card.name || ''}"
+                                     data-rarity="${card.rarity || ''}"
+                                     data-expansion="${card.expansion || ''}"
+                                     data-condition="${card.condition || ''}"
+                                     data-quantity="${card.quantity || '1'}"
+                                     data-price="${card.price || ''}">
+                                    <img src="${card.image_url}" alt="${card.name || 'Card'}" />
                                 </div>
                             `).join('')}
                         </div>
