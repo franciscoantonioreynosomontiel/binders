@@ -415,26 +415,41 @@ async function renderAlbum(album) {
             width: width, height: height,
             autoCenter: false, gradients: true, acceleration: false,
             display: 'double', elevation: 0, duration: 500,
-            cornerSize: 40,
+            cornerSize: 30, // Reducido para evitar solapamiento con cartas
             when: {
                 start: function(e, p, corner) {
-                    // Permitir el flip solo desde las esquinas
-                    if (!corner) e.preventDefault();
+                    // Si estamos sobre una carta y no es un arrastre intencionado, evitamos el flip
+                    const target = e.target || e.srcElement;
+                    const isCard = $(target).closest('.card-slot').length > 0;
 
-                    // Forzar posición estable desde el inicio
+                    if (isCard && !isMoving) {
+                        e.preventDefault();
+                        return;
+                    }
+
+                    // Solo permitir flip desde esquinas
+                    if (!corner) {
+                        e.preventDefault();
+                        return;
+                    }
+
+                    // Bloquear desplazamiento lateral indeseado
                     $(this).css({
                         'left': '0',
                         'top': '0',
-                        'margin': '0 auto',
-                        'transform': 'translate(0, 0)'
+                        'margin': '0 auto'
                     });
                 },
                 turning: function(e, page, view) {
+                    // En móvil, si no hay movimiento real (solo tap), evitamos que pase la página
+                    if (window.innerWidth <= 640 && !isMoving) {
+                        e.preventDefault();
+                    }
+
                     $(this).css({
                         'left': '0',
                         'top': '0',
-                        'margin': '0 auto',
-                        'transform': 'translate(0, 0)'
+                        'margin': '0 auto'
                     });
                 }
             }
