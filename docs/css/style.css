@@ -63,19 +63,18 @@ body {
     user-select: none;  
     position: relative !important;
     margin: 0 auto !important;
+    /* Forzamos que se mantenga centrado sin desplazamientos laterales */
     left: 0 !important;
+    right: 0 !important;
     top: 0 !important;
-    transform: translate(0, 0) !important;
     will-change: transform;
     touch-action: none !important;
-    backface-visibility: hidden;
 }
 
-/* Evitar desplazamientos durante el flip */
+/* Evitar que Turn.js mueva el contenedor principal */
 .album[style*="left"], .album[style*="top"] {
     left: 0 !important;
     top: 0 !important;
-    transform: translate(0, 0) !important;
 }
 
 /* Ensure internal turn.js pages are properly positioned */
