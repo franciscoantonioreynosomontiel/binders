@@ -400,48 +400,55 @@ async function renderAlbum(album) {
     const initTurn = () => {
         if (turnInitialized) return;
         turnInitialized = true;
-        const isMobile = window.innerWidth <= 640;
-        let width = 600, height = 420;
 
         const $wrapper = $albumContainer.find('.album-wrapper');
+        const containerWidth = $albumContainer.width() || window.innerWidth;
 
-        if (isMobile) {
-            width = ($albumContainer.width() || window.innerWidth) * 0.96;
-            height = (width / 600) * 420;
-            $wrapper.css({width: width, height: height});
+        // Usar Math.floor para evitar problemas de redondeo de sub-pixeles
+        let width = 600;
+        let height = 420;
+
+        if (containerWidth < 650) {
+            width = Math.floor(containerWidth * 0.95);
+            height = Math.floor((width / 600) * 420);
         }
 
+        $wrapper.css({ width: width, height: height });
+
         $albumDiv.turn({
-            width: width, height: height,
-            autoCenter: true, gradients: true, acceleration: true,
-            display: 'double', elevation: 0, duration: 600,
-            cornerSize: 20, // Reducido para evitar solapamiento con cartas y cumplir petición del usuario
+            width: width,
+            height: height,
+            autoCenter: false, // Desactivado para que el álbum no se desplace horizontalmente al abrirse
+            gradients: true,
+            acceleration: true, // Activado para mayor fluidez, el desplazamiento se corregirá vía CSS
+            display: 'double',
+            elevation: 50,
+            duration: 600,
+            cornerSize: 50,
             when: {
                 start: function(e, p, corner) {
-                    // Si estamos sobre una carta y no es un arrastre intencionado, evitamos el flip
-                    const target = e.target || e.srcElement;
-                    const isCard = $(target).closest('.card-slot').length > 0;
-
-                    if (isCard && !isMoving) {
-                        e.preventDefault();
-                        return;
+                    // Si no hay movimiento (es un click estático) y estamos en una carta, cancelamos
+                    if (!isMoving) {
+                        const target = e.target || e.srcElement;
+                        if ($(target).closest('.card-slot').length > 0) {
+                            e.preventDefault();
+                            return;
+                        }
                     }
 
-                    // Solo permitir flip desde esquinas
-                    if (!corner) {
+                    // Si no es una esquina válida para arrastrar, cancelamos el inicio automático por click
+                    if (!corner && !isMoving) {
                         e.preventDefault();
-                        return;
                     }
                 },
                 turning: function(e, page, view) {
-                    // En móvil, si no hay movimiento real (solo tap), evitamos que pase la página
-                    if (window.innerWidth <= 640 && !isMoving) {
+                    // Solo permitimos el giro si es manual (isManualPageTurn) o si hay movimiento real (arrastre)
+                    if (!isMoving && !isManualPageTurn) {
                         e.preventDefault();
                     }
                 }
             }
         });
-
     };
 
     if ($images.length === 0) setTimeout(initTurn, 150);
