@@ -1,4 +1,4 @@
-let isDraggingCard = false;
+let isDragging = false;
 let startX, startY;
 
 $(document).ready(async function() {
@@ -20,42 +20,37 @@ $(document).ready(async function() {
         switchView('decks');
     }
 
-    // Drag detection for cards (shared across views if needed)
-    $(document).on("touchstart mousedown", ".card-slot", function(e) {
-        isDraggingCard = false;
-        const touch = e.originalEvent.touches ? e.originalEvent.touches[0] : e;
-        startX = touch.pageX;
-        startY = touch.pageY;
-
-        // Stop propagation to prevent Turn.js from catching this as a start of a flip
-        if ($(this).closest('.album').length > 0) {
-            e.stopPropagation();
-        }
+    // --- Card Interaction Logic ---
+    // Seguimiento global para gestos de arrastre
+    $(document).on("touchstart mousedown", function(e) {
+        const ev = e.type.startsWith('touch') ? e.originalEvent.touches[0] : e;
+        startX = ev.pageX;
+        startY = ev.pageY;
+        isDragging = false;
     });
 
-    $(document).on("touchmove mousemove", ".card-slot", function(e) {
+    $(document).on("touchmove mousemove", function(e) {
         if (startX === undefined || startY === undefined) return;
-        const touch = e.originalEvent.touches ? e.originalEvent.touches[0] : e;
-        if (Math.abs(touch.pageX - startX) > 10 || Math.abs(touch.pageY - startY) > 10) {
-            isDraggingCard = true;
+        const ev = e.type.startsWith('touch') ? e.originalEvent.touches[0] : e;
+        // Aumentamos el umbral a 25px para mejor soporte móvil
+        if (Math.abs(ev.pageX - startX) > 25 || Math.abs(ev.pageY - startY) > 25) {
+            isDragging = true;
         }
     });
 
     $(document).on("touchend mouseup", function() {
         setTimeout(() => {
-            isDraggingCard = false;
             startX = undefined;
             startY = undefined;
         }, 50);
+        // Reset isDragging con un poco de delay para que el click lo detecte
+        setTimeout(() => { isDragging = false; }, 200);
     });
 
-    // Delegated fallback for any dynamically added slots that aren't caught by direct binding
     $(document).on("click", ".card-slot", function(e) {
-        if (isDraggingCard) return;
-        // Only trigger if not already handled by direct binding to avoid double modals
-        if (!$(this).data('handled')) {
-            openCardModal($(this));
-        }
+        if (isDragging) return;
+        e.stopPropagation();
+        openCardModal($(this));
     });
 
     $(document).on("click", "#close-btn, #image-overlay", function(e) {
@@ -99,9 +94,8 @@ function filterContent(query) {
                 if (cardName.includes(query)) {
                     cardMatch = true;
                     if (firstMatchPage === -1) {
-                        // Find which page this card is on
                         const $page = $(this).closest('.page');
-                        firstMatchPage = $page.index() + 1; // Turn.js uses 1-based indexing
+                        firstMatchPage = $page.index() + 1;
                     }
                 }
             });
@@ -110,7 +104,6 @@ function filterContent(query) {
                 $album.show();
                 if (cardMatch && firstMatchPage !== -1) {
                     const $turnAlbum = $album.find('.album');
-                    // Auto-flip to the first matching card's page
                     if ($turnAlbum.turn('is')) {
                         $turnAlbum.turn('page', firstMatchPage);
                     }
@@ -120,16 +113,12 @@ function filterContent(query) {
             }
         });
     } else {
-        // Filter Decks
         $('.deck-public-item').each(function() {
             const $deck = $(this);
             const deckName = $deck.find('h3').text().toLowerCase();
             let deckMatch = deckName.includes(query);
             let cardMatch = false;
 
-            // In decks we don't have flip pages yet, just Swiper
-            // But we can still search card names if we stored them
-            // Let's check the images/data in the swiper
             $deck.find('.swiper-slide').each(function() {
                 const cardName = ($(this).find('img').attr('alt') || '').toLowerCase();
                 if (cardName.includes(query)) {
@@ -214,7 +203,6 @@ async function loadStoreData() {
 
     $('#public-store-name').text(`Tienda: ${userData.store_name}`);
 
-    // Load Albums
     loadPublicAlbums(userData.id);
 }
 
@@ -309,12 +297,16 @@ async function loadPublicDecks() {
             perSlideRotate: 2,
             rotate: true,
             slideShadows: true,
-        });
-
-        $deckItem.find('.card-slot').on('click', function(e) {
-            if (isDraggingCard) return;
-            $(this).data('handled', true);
-            openCardModal($(this));
+            preventClicksPropagation: false,
+            on: {
+                click: function(s, e) {
+                    // Si no estamos arrastrando, abrimos el modal
+                    if (!isDragging) {
+                        const $slot = $(e.target).closest('.card-slot');
+                        if ($slot.length) openCardModal($slot);
+                    }
+                }
+            }
         });
     });
 }
@@ -356,13 +348,6 @@ async function renderAlbum(album) {
         for (let i = 0; i < 9; i++) {
             const slotData = slots ? slots.find(s => s.slot_index === i) : null;
             const $slot = $('<div class="card-slot"></div>');
-
-            // Direct binding to ensure modal opens
-            $slot.on('click', function(e) {
-                if (isDraggingCard) return;
-                $(this).data('handled', true);
-                openCardModal($(this));
-            });
 
             if (slotData) {
                 $slot.attr({
@@ -410,17 +395,25 @@ async function renderAlbum(album) {
             cornerSize: 50,
             when: {
                 start: function(e, p, corner) {
+                    // Permitir el flip solo desde las esquinas
                     if (!corner) e.preventDefault();
                 },
                 turning: function(e, page, view) {
-                    // Force stability during transitions
                     $(this).css({
                         'left': '0',
                         'top': '0',
-                        'margin': '0 auto'
+                        'margin': '0 auto',
+                        'transform': 'translate(0, 0)'
                     });
                 }
             }
+        });
+
+        // Asegurar interacción de cartas dentro del álbum (Turn.js a veces bloquea eventos)
+        $albumDiv.find('.card-slot').on('click', function(e) {
+            if (isDragging) return;
+            e.stopPropagation();
+            openCardModal($(this));
         });
     };
 
