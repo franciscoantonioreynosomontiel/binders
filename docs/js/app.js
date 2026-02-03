@@ -1,4 +1,6 @@
 let isDragging = false;
+let isMoving = false;
+let isManualPageTurn = false;
 let startX, startY;
 
 $(document).ready(async function() {
@@ -32,8 +34,14 @@ $(document).ready(async function() {
     $(document).on("touchmove mousemove", function(e) {
         if (startX === undefined || startY === undefined) return;
         const ev = e.type.startsWith('touch') ? e.originalEvent.touches[0] : e;
+        const dx = Math.abs(ev.pageX - startX);
+        const dy = Math.abs(ev.pageY - startY);
+
+        if (dx > 10 || dy > 10) {
+            isMoving = true;
+        }
         // Aumentamos el umbral a 25px para mejor soporte móvil
-        if (Math.abs(ev.pageX - startX) > 25 || Math.abs(ev.pageY - startY) > 25) {
+        if (dx > 25 || dy > 25) {
             isDragging = true;
         }
     });
@@ -43,8 +51,11 @@ $(document).ready(async function() {
             startX = undefined;
             startY = undefined;
         }, 50);
-        // Reset isDragging con un poco de delay para que el click lo detecte
-        setTimeout(() => { isDragging = false; }, 200);
+        // Reset flags con un poco de delay para que el click lo detecte
+        setTimeout(() => {
+            isDragging = false;
+            isMoving = false;
+        }, 200);
     });
 
     $(document).on("click", ".card-slot", function(e) {
@@ -105,7 +116,9 @@ function filterContent(query) {
                 if (cardMatch && firstMatchPage !== -1) {
                     const $turnAlbum = $album.find('.album');
                     if ($turnAlbum.turn('is')) {
+                        isManualPageTurn = true;
                         $turnAlbum.turn('page', firstMatchPage);
+                        setTimeout(() => { isManualPageTurn = false; }, 100);
                     }
                 }
             } else {
@@ -399,6 +412,14 @@ async function renderAlbum(album) {
                     if (!corner) e.preventDefault();
                 },
                 turning: function(e, page, view) {
+                    const isMobile = window.innerWidth <= 640;
+                    // En móvil, bloquear el giro si no es un arrastre real (isMoving)
+                    // y no es un cambio manual programático (isManualPageTurn)
+                    if (isMobile && startX !== undefined && !isMoving && !isManualPageTurn) {
+                        e.preventDefault();
+                        return;
+                    }
+
                     $(this).css({
                         'left': '0',
                         'top': '0',
