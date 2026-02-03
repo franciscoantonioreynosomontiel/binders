@@ -10,3 +10,9 @@
 127.0.0.1 - - [03/Feb/2026 10:05:52] "GET /js/turn.js HTTP/1.1" 200 -
 127.0.0.1 - - [03/Feb/2026 10:05:52] "GET /js/supabase-config.js HTTP/1.1" 200 -
 127.0.0.1 - - [03/Feb/2026 10:05:52] "GET /js/app.js HTTP/1.1" 200 -
+127.0.0.1 - - [03/Feb/2026 13:13:49] "GET /public.html?store=test HTTP/1.1" 200 -
+127.0.0.1 - - [03/Feb/2026 13:13:49] "GET /css/style.css HTTP/1.1" 200 -
+127.0.0.1 - - [03/Feb/2026 13:13:49] "GET /css/barajaryg.css HTTP/1.1" 200 -
+127.0.0.1 - - [03/Feb/2026 13:13:49] "GET /js/turn.js HTTP/1.1" 200 -
+127.0.0.1 - - [03/Feb/2026 13:13:49] "GET /js/supabase-config.js HTTP/1.1" 200 -
+127.0.0.1 - - [03/Feb/2026 13:13:49] "GET /js/app.js HTTP/1.1" 200 -

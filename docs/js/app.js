@@ -37,7 +37,7 @@ $(document).ready(async function() {
         const dx = Math.abs(ev.pageX - startX);
         const dy = Math.abs(ev.pageY - startY);
 
-        if (dx > 10 || dy > 10) {
+        if (dx > 5 || dy > 5) {
             isMoving = true;
         }
         if (dx > 15 || dy > 15) {
@@ -413,9 +413,9 @@ async function renderAlbum(album) {
 
         $albumDiv.turn({
             width: width, height: height,
-            autoCenter: false, gradients: true, acceleration: false,
-            display: 'double', elevation: 0, duration: 500,
-            cornerSize: 30, // Reducido para evitar solapamiento con cartas
+            autoCenter: true, gradients: true, acceleration: true,
+            display: 'double', elevation: 0, duration: 600,
+            cornerSize: 20, // Reducido para evitar solapamiento con cartas y cumplir petición del usuario
             when: {
                 start: function(e, p, corner) {
                     // Si estamos sobre una carta y no es un arrastre intencionado, evitamos el flip
@@ -432,25 +432,12 @@ async function renderAlbum(album) {
                         e.preventDefault();
                         return;
                     }
-
-                    // Bloquear desplazamiento lateral indeseado
-                    $(this).css({
-                        'left': '0',
-                        'top': '0',
-                        'margin': '0 auto'
-                    });
                 },
                 turning: function(e, page, view) {
                     // En móvil, si no hay movimiento real (solo tap), evitamos que pase la página
                     if (window.innerWidth <= 640 && !isMoving) {
                         e.preventDefault();
                     }
-
-                    $(this).css({
-                        'left': '0',
-                        'top': '0',
-                        'margin': '0 auto'
-                    });
                 }
             }
         });
