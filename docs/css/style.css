@@ -69,7 +69,14 @@ body {
     will-change: transform;
     touch-action: none !important;
     backface-visibility: hidden;
-}  
+}
+
+/* Evitar desplazamientos durante el flip */
+.album[style*="left"], .album[style*="top"] {
+    left: 0 !important;
+    top: 0 !important;
+    transform: translate(0, 0) !important;
+}
 
 /* Ensure internal turn.js pages are properly positioned */
 .album .turn-page {
@@ -884,6 +891,9 @@ body {
     .album {
         margin: 0 auto !important;
         box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        left: 0 !important;
+        top: 0 !important;
+        transform: translate(0, 0) !important;
     }
 
     .public-album-item {
@@ -901,11 +911,11 @@ body {
     }
 
     .page {
-        padding: 4px;
+        padding: 10px; /* Aumentado de 4px para facilitar el agarre de la esquina */
     }
 
     .grid-container {
-        gap: 3px;
+        gap: 5px; /* Ligeramente aumentado para mejor visualización */
     }
 
     .info-grid {

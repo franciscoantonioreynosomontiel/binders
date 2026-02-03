@@ -31,6 +31,16 @@ $(document).ready(async function() {
         isDragging = false;
     });
 
+    // Bloquear propagación en cartas para evitar el "peel" de Turn.js al hacer click
+    $(document).on("touchstart mousedown", ".card-slot", function(e) {
+        const ev = e.type.startsWith('touch') ? e.originalEvent.touches[0] : e;
+        startX = ev.pageX;
+        startY = ev.pageY;
+        isDragging = false;
+        isMoving = false;
+        e.stopPropagation();
+    });
+
     $(document).on("touchmove mousemove", function(e) {
         if (startX === undefined || startY === undefined) return;
         const ev = e.type.startsWith('touch') ? e.originalEvent.touches[0] : e;
@@ -405,11 +415,19 @@ async function renderAlbum(album) {
             width: width, height: height,
             autoCenter: false, gradients: true, acceleration: false,
             display: 'double', elevation: 0, duration: 600,
-            cornerSize: 50,
+            cornerSize: 40,
             when: {
                 start: function(e, p, corner) {
                     // Permitir el flip solo desde las esquinas
                     if (!corner) e.preventDefault();
+
+                    // Forzar posición estable desde el inicio
+                    $(this).css({
+                        'left': '0',
+                        'top': '0',
+                        'margin': '0 auto',
+                        'transform': 'translate(0, 0)'
+                    });
                 },
                 turning: function(e, page, view) {
                     const isMobile = window.innerWidth <= 640;
