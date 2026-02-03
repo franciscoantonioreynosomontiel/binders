@@ -37,11 +37,11 @@ $(document).ready(async function() {
         const dx = Math.abs(ev.pageX - startX);
         const dy = Math.abs(ev.pageY - startY);
 
-        if (dx > 10 || dy > 10) {
+        // Reducimos umbrales para mayor fluidez y respuesta rápida
+        if (dx > 5 || dy > 5) {
             isMoving = true;
         }
-        // Aumentamos el umbral a 25px para mejor soporte móvil
-        if (dx > 25 || dy > 25) {
+        if (dx > 15 || dy > 15) {
             isDragging = true;
         }
     });
@@ -423,15 +423,9 @@ async function renderAlbum(album) {
             width: width, height: height,
             autoCenter: false, gradients: true, acceleration: false,
             display: 'double', elevation: 0, duration: 600,
-            cornerSize: 40,
+            cornerSize: isMobile ? 80 : 50,
             when: {
                 start: function(e, p, corner) {
-                    // Si el toque viene de una carta, cancelar el flip
-                    if ($(e.target).closest('.card-slot').length) {
-                        e.preventDefault();
-                        return;
-                    }
-
                     // Permitir el flip solo desde las esquinas
                     if (!corner) e.preventDefault();
 

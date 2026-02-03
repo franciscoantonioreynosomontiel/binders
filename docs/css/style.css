@@ -911,7 +911,7 @@ body {
     }
 
     .page {
-        padding: 10px; /* Aumentado de 4px para facilitar el agarre de la esquina */
+        padding: 20px; /* Aumentado para facilitar el agarre de la esquina sin tocar las cartas */
     }
 
     .grid-container {
