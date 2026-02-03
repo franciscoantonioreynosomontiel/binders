@@ -40,7 +40,7 @@ $(document).ready(async function() {
         if (dx > 10 || dy > 10) {
             isMoving = true;
         }
-        if (dx > 25 || dy > 25) {
+        if (dx > 15 || dy > 15) {
             isDragging = true;
         }
     });
@@ -369,17 +369,19 @@ async function renderAlbum(album) {
             $grid.append($slot);
         }
 
-        // Permitir que los eventos lleguen a Turn.js para detectar el arrastre desde las esquinas
+        // Seguimiento de inicio de toque/click para distinguir arrastre de click
         $grid.on("touchstart mousedown", ".card-slot", function(e) {
             const ev = e.type.startsWith('touch') ? e.originalEvent.touches[0] : e;
             startX = ev.pageX;
             startY = ev.pageY;
             isDragging = false;
             isMoving = false;
+            // No usamos stopPropagation aquí para permitir que Turn.js detecte gestos en las esquinas
         });
 
         $grid.on("click", ".card-slot", function(e) {
             if (isDragging) return;
+            e.stopPropagation(); // Detener para que el click solo abra el modal
             openCardModal($(this));
         });
 
@@ -412,8 +414,8 @@ async function renderAlbum(album) {
         $albumDiv.turn({
             width: width, height: height,
             autoCenter: false, gradients: true, acceleration: false,
-            display: 'double', elevation: 0, duration: 600,
-            cornerSize: 50,
+            display: 'double', elevation: 0, duration: 500,
+            cornerSize: 40,
             when: {
                 start: function(e, p, corner) {
                     // Permitir el flip solo desde las esquinas
