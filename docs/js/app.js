@@ -37,11 +37,10 @@ $(document).ready(async function() {
         const dx = Math.abs(ev.pageX - startX);
         const dy = Math.abs(ev.pageY - startY);
 
-        // Reducimos umbrales para mayor fluidez y respuesta rápida
-        if (dx > 5 || dy > 5) {
+        if (dx > 10 || dy > 10) {
             isMoving = true;
         }
-        if (dx > 15 || dy > 15) {
+        if (dx > 25 || dy > 25) {
             isDragging = true;
         }
     });
@@ -56,12 +55,6 @@ $(document).ready(async function() {
             isDragging = false;
             isMoving = false;
         }, 200);
-    });
-
-    $(document).on("click", ".card-slot", function(e) {
-        if (isDragging) return;
-        e.stopPropagation();
-        openCardModal($(this));
     });
 
     $(document).on("click", "#close-btn, #image-overlay", function(e) {
@@ -376,20 +369,17 @@ async function renderAlbum(album) {
             $grid.append($slot);
         }
 
-        // Bloquear propagación en el grid para evitar que Turn.js inicie el flip desde las cartas
+        // Permitir que los eventos lleguen a Turn.js para detectar el arrastre desde las esquinas
         $grid.on("touchstart mousedown", ".card-slot", function(e) {
             const ev = e.type.startsWith('touch') ? e.originalEvent.touches[0] : e;
             startX = ev.pageX;
             startY = ev.pageY;
             isDragging = false;
             isMoving = false;
-            // Detenemos la propagación para que Turn.js (en niveles superiores) no vea el inicio del toque
-            e.stopPropagation();
         });
 
         $grid.on("click", ".card-slot", function(e) {
             if (isDragging) return;
-            e.stopPropagation();
             openCardModal($(this));
         });
 
@@ -423,7 +413,7 @@ async function renderAlbum(album) {
             width: width, height: height,
             autoCenter: false, gradients: true, acceleration: false,
             display: 'double', elevation: 0, duration: 600,
-            cornerSize: isMobile ? 80 : 50,
+            cornerSize: 50,
             when: {
                 start: function(e, p, corner) {
                     // Permitir el flip solo desde las esquinas
@@ -438,14 +428,6 @@ async function renderAlbum(album) {
                     });
                 },
                 turning: function(e, page, view) {
-                    const isMobile = window.innerWidth <= 640;
-                    // En móvil, bloquear el giro si no es un arrastre real (isMoving)
-                    // y no es un cambio manual programático (isManualPageTurn)
-                    if (isMobile && startX !== undefined && !isMoving && !isManualPageTurn) {
-                        e.preventDefault();
-                        return;
-                    }
-
                     $(this).css({
                         'left': '0',
                         'top': '0',
