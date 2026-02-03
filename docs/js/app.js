@@ -31,16 +31,6 @@ $(document).ready(async function() {
         isDragging = false;
     });
 
-    // Bloquear propagación en cartas para evitar el "peel" de Turn.js al hacer click
-    $(document).on("touchstart mousedown", ".card-slot", function(e) {
-        const ev = e.type.startsWith('touch') ? e.originalEvent.touches[0] : e;
-        startX = ev.pageX;
-        startY = ev.pageY;
-        isDragging = false;
-        isMoving = false;
-        e.stopPropagation();
-    });
-
     $(document).on("touchmove mousemove", function(e) {
         if (startX === undefined || startY === undefined) return;
         const ev = e.type.startsWith('touch') ? e.originalEvent.touches[0] : e;
@@ -385,6 +375,24 @@ async function renderAlbum(album) {
             }
             $grid.append($slot);
         }
+
+        // Bloquear propagación en el grid para evitar que Turn.js inicie el flip desde las cartas
+        $grid.on("touchstart mousedown", ".card-slot", function(e) {
+            const ev = e.type.startsWith('touch') ? e.originalEvent.touches[0] : e;
+            startX = ev.pageX;
+            startY = ev.pageY;
+            isDragging = false;
+            isMoving = false;
+            // Detenemos la propagación para que Turn.js (en niveles superiores) no vea el inicio del toque
+            e.stopPropagation();
+        });
+
+        $grid.on("click", ".card-slot", function(e) {
+            if (isDragging) return;
+            e.stopPropagation();
+            openCardModal($(this));
+        });
+
         $pageDiv.append($grid).appendTo($albumDiv);
     }
 
@@ -418,6 +426,12 @@ async function renderAlbum(album) {
             cornerSize: 40,
             when: {
                 start: function(e, p, corner) {
+                    // Si el toque viene de una carta, cancelar el flip
+                    if ($(e.target).closest('.card-slot').length) {
+                        e.preventDefault();
+                        return;
+                    }
+
                     // Permitir el flip solo desde las esquinas
                     if (!corner) e.preventDefault();
 
@@ -448,12 +462,6 @@ async function renderAlbum(album) {
             }
         });
 
-        // Asegurar interacción de cartas dentro del álbum (Turn.js a veces bloquea eventos)
-        $albumDiv.find('.card-slot').on('click', function(e) {
-            if (isDragging) return;
-            e.stopPropagation();
-            openCardModal($(this));
-        });
     };
 
     if ($images.length === 0) setTimeout(initTurn, 150);
