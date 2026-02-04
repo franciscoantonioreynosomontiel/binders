@@ -63,16 +63,25 @@ body {
     box-shadow: 0 30px 60px rgba(0,0,0,0.8);  
     user-select: none;  
     position: relative;
-    margin: 0 !important;
+    margin: 0 auto !important;
+    left: 0 !important;
+    top: 0 !important;
     will-change: transform;
     touch-action: none !important;
     backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
     transform: translate3d(0,0,0);
 }
 
-/* Ensure internal turn.js pages are properly positioned */
+/* Ensure internal turn.js elements are properly positioned and visible */
+.turn-viewport {
+    overflow: visible !important;
+}
+
 .album .turn-page {
     position: absolute !important;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 .page {    
@@ -596,6 +605,56 @@ body {
     font-size: 12px;
 }
 
+/* Toggle Switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #333;
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #00d2ff;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #00d2ff;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
 /* Login Styles */
 .login-container {
     width: 100%;
@@ -883,6 +942,8 @@ body {
 
     .album {
         margin: 0 auto !important;
+        left: 0 !important;
+        top: 0 !important;
         box-shadow: 0 5px 15px rgba(0,0,0,0.5);
     }
 

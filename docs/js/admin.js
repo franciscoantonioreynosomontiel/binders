@@ -47,10 +47,22 @@ $(document).ready(function() {
         const back = $('#input-album-back').val();
         const is_public = $('#input-album-public').is(':checked');
 
-        const { error } = await _supabase
+        let updateData = { title, cover_image_url: cover, back_image_url: back, is_public };
+        let { error } = await _supabase
             .from('albums')
-            .update({ title, cover_image_url: cover, back_image_url: back, is_public })
+            .update(updateData)
             .eq('id', currentAlbumId);
+
+        // Fallback if is_public column doesn't exist
+        if (error && error.message.includes('is_public')) {
+            console.warn("Columna is_public no encontrada, intentando guardado básico.");
+            delete updateData.is_public;
+            const retry = await _supabase
+                .from('albums')
+                .update(updateData)
+                .eq('id', currentAlbumId);
+            error = retry.error;
+        }
 
         if (error) {
             Swal.fire('Error', 'No se pudieron guardar los cambios', 'error');
@@ -169,10 +181,22 @@ $(document).ready(function() {
         const name = $('#input-deck-name').val();
         const is_public = $('#input-deck-public').is(':checked');
 
-        const { error } = await _supabase
+        let updateData = { name, is_public };
+        let { error } = await _supabase
             .from('decks')
-            .update({ name, is_public })
+            .update(updateData)
             .eq('id', currentDeckId);
+
+        // Fallback if is_public column doesn't exist
+        if (error && error.message.includes('is_public')) {
+            console.warn("Columna is_public no encontrada, intentando guardado básico.");
+            delete updateData.is_public;
+            const retry = await _supabase
+                .from('decks')
+                .update(updateData)
+                .eq('id', currentDeckId);
+            error = retry.error;
+        }
 
         if (error) {
             Swal.fire('Error', 'No se pudo actualizar el deck', 'error');
@@ -201,6 +225,28 @@ $(document).ready(function() {
             } else {
                 loadDeckCards(currentDeckId);
             }
+        }
+    });
+
+    // Toggle Public/Private from list
+    $(document).on('change', '.toggle-public', async function() {
+        const id = $(this).data('id');
+        const type = $(this).data('type');
+        const isChecked = $(this).is(':checked');
+        const $label = $(this).parent().next();
+
+        $label.text(isChecked ? 'Público' : 'Privado');
+
+        const { error } = await _supabase
+            .from(type)
+            .update({ is_public: isChecked })
+            .eq('id', id);
+
+        if (error) {
+            Swal.fire('Error', 'No se pudo actualizar la visibilidad', 'error');
+            // Revert UI if error
+            $(this).prop('checked', !isChecked);
+            $label.text(!isChecked ? 'Público' : 'Privado');
         }
     });
 });
@@ -330,13 +376,25 @@ async function loadDecks() {
     }
 
     decks.forEach(deck => {
-        const publicBadge = deck.is_public === false ? '<span style="color: #ff4757; font-size: 10px;"><i class="fas fa-eye-slash"></i> Privado</span>' : '<span style="color: #2ed573; font-size: 10px;"><i class="fas fa-eye"></i> Público</span>';
+        const isPublic = deck.is_public !== false;
+        const publicSwitch = `
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <label class="switch">
+                    <input type="checkbox" class="toggle-public" data-id="${deck.id}" data-type="decks" ${isPublic ? 'checked' : ''}>
+                    <span class="slider"></span>
+                </label>
+                <span style="font-size: 10px; color: #aaa;">${isPublic ? 'Público' : 'Privado'}</span>
+            </div>
+        `;
+
         const $card = $(`
             <div class="album-card">
                 <div class="deck-preview-icon"><i class="fas fa-layer-group fa-3x"></i></div>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
                     <h3 style="margin:0;">${deck.name}</h3>
-                    ${publicBadge}
+                </div>
+                <div style="margin-top: 5px;">
+                    ${publicSwitch}
                 </div>
                 <div style="display:flex; gap:10px; margin-top:auto;">
                     <button class="btn btn-edit-deck" data-id="${deck.id}">Editar</button>
@@ -466,13 +524,25 @@ async function loadAlbums() {
 
     albums.forEach(album => {
         const cover = album.cover_image_url || 'https://via.placeholder.com/300x150?text=Sin+Portada';
-        const publicBadge = album.is_public === false ? '<span style="color: #ff4757; font-size: 10px;"><i class="fas fa-eye-slash"></i> Privado</span>' : '<span style="color: #2ed573; font-size: 10px;"><i class="fas fa-eye"></i> Público</span>';
+        const isPublic = album.is_public !== false;
+        const publicSwitch = `
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <label class="switch">
+                    <input type="checkbox" class="toggle-public" data-id="${album.id}" data-type="albums" ${isPublic ? 'checked' : ''}>
+                    <span class="slider"></span>
+                </label>
+                <span style="font-size: 10px; color: #aaa;">${isPublic ? 'Público' : 'Privado'}</span>
+            </div>
+        `;
+
         const $card = $(`
             <div class="album-card">
                 <img src="${cover}" alt="${album.title}">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
                     <h3 style="margin:0;">${album.title}</h3>
-                    ${publicBadge}
+                </div>
+                <div style="margin-top: 5px;">
+                    ${publicSwitch}
                 </div>
                 <div style="display:flex; gap:10px; margin-top:auto;">
                     <button class="btn btn-edit-album" data-id="${album.id}">Editar</button>
