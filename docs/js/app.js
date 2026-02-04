@@ -79,66 +79,83 @@ $(document).ready(async function() {
 });
 
 function filterContent(query) {
-    const currentView = $('.nav-btn.active').data('view');
+    let anyVisible = false;
 
-    if (currentView === 'albums') {
-        $('.public-album-item').each(function() {
-            const $album = $(this);
-            const albumTitle = $album.find('.public-album-header').text().toLowerCase();
-            let albumMatch = albumTitle.includes(query);
-            let cardMatch = false;
-            let firstMatchPage = -1;
+    // Filtrar álbumes
+    $('.public-album-item').each(function() {
+        const $album = $(this);
+        const albumTitle = $album.find('.public-album-header').text().toLowerCase();
+        let albumMatch = albumTitle.includes(query);
+        let cardMatch = false;
+        let firstMatchPage = -1;
 
-            $album.find('.card-slot').each(function() {
-                const cardName = ($(this).attr('data-name') || '').toLowerCase();
-                if (cardName.includes(query)) {
-                    cardMatch = true;
-                    if (firstMatchPage === -1) {
-                        const $page = $(this).closest('.page');
-                        firstMatchPage = $page.index() + 1;
-                    }
+        $album.find('.card-slot').each(function() {
+            const cardName = ($(this).attr('data-name') || '').toLowerCase();
+            if (cardName.includes(query)) {
+                cardMatch = true;
+                if (firstMatchPage === -1) {
+                    const $page = $(this).closest('.page');
+                    firstMatchPage = $page.index() + 1;
                 }
-            });
-
-            if (albumMatch || cardMatch) {
-                $album.show();
-                if (cardMatch && firstMatchPage !== -1) {
-                    const $turnAlbum = $album.find('.album');
-                    if ($turnAlbum.turn('is')) {
-                        isManualPageTurn = true;
-                        $turnAlbum.turn('page', firstMatchPage);
-                        setTimeout(() => { isManualPageTurn = false; }, 100);
-                    }
-                }
-            } else {
-                $album.hide();
             }
         });
+
+        if (albumMatch || cardMatch) {
+            $album.show();
+            anyVisible = true;
+            if (cardMatch && firstMatchPage !== -1) {
+                const $turnAlbum = $album.find('.album');
+                if ($turnAlbum.turn('is')) {
+                    isManualPageTurn = true;
+                    $turnAlbum.turn('page', firstMatchPage);
+                    setTimeout(() => { isManualPageTurn = false; }, 100);
+                }
+            }
+        } else {
+            $album.hide();
+        }
+    });
+
+    // Filtrar decks
+    $('.deck-public-item').each(function() {
+        const $deck = $(this);
+        const deckName = $deck.find('h3').text().toLowerCase();
+        let deckMatch = deckName.includes(query);
+        let cardMatch = false;
+        let firstMatchIndex = -1;
+
+        $deck.find('.swiper-slide').each(function(index) {
+            const cardName = ($(this).attr('data-name') || '').toLowerCase();
+            if (cardName.includes(query)) {
+                cardMatch = true;
+                if (firstMatchIndex === -1) firstMatchIndex = index;
+            }
+        });
+
+        if (deckMatch || cardMatch) {
+            $deck.show();
+            anyVisible = true;
+            if (cardMatch && firstMatchIndex !== -1) {
+                const swiperEl = $deck.find('.swiper')[0];
+                if (swiperEl && swiperEl.swiper) {
+                    swiperEl.swiper.slideTo(firstMatchIndex);
+                }
+            }
+        } else {
+            $deck.hide();
+        }
+    });
+
+    if (anyVisible) {
+        $('#no-results').hide();
     } else {
-        $('.deck-public-item').each(function() {
-            const $deck = $(this);
-            const deckName = $deck.find('h3').text().toLowerCase();
-            let deckMatch = deckName.includes(query);
-            let cardMatch = false;
-
-            $deck.find('.swiper-slide').each(function() {
-                const cardName = ($(this).find('img').attr('alt') || '').toLowerCase();
-                if (cardName.includes(query)) {
-                    cardMatch = true;
-                }
-            });
-
-            if (deckMatch || cardMatch) {
-                $deck.show();
-            } else {
-                $deck.hide();
-            }
-        });
+        $('#no-results').show();
     }
 }
 
 function resetFilter() {
     $('.public-album-item, .deck-public-item').show();
+    $('#no-results').hide();
 }
 
 function openCardModal($slot) {
@@ -213,6 +230,7 @@ async function loadPublicAlbums(userId) {
         .from('albums')
         .select('*')
         .eq('user_id', userId)
+        .neq('is_public', false)
         .order('id', { ascending: true });
 
     if (error) {
@@ -252,6 +270,7 @@ async function loadPublicDecks() {
             deck_cards (*)
         `)
         .eq('user_id', user.id)
+        .neq('is_public', false)
         .order('created_at', { ascending: false });
 
     if (error || !decks) {
@@ -405,7 +424,8 @@ async function renderAlbum(album) {
             cornerSize: isMobile ? 150 : 50,
             when: {
                 start: function(event, pageObject, corner) {
-                    if (!corner) {
+                    // Solo permitir el giro si es desde una esquina o disparado manualmente por búsqueda
+                    if (!corner && !isManualPageTurn) {
                         event.preventDefault();
                     }
                 }

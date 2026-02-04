@@ -45,10 +45,11 @@ $(document).ready(function() {
         const title = $('#input-album-title').val();
         const cover = $('#input-album-cover').val();
         const back = $('#input-album-back').val();
+        const is_public = $('#input-album-public').is(':checked');
 
         const { error } = await _supabase
             .from('albums')
-            .update({ title, cover_image_url: cover, back_image_url: back })
+            .update({ title, cover_image_url: cover, back_image_url: back, is_public })
             .eq('id', currentAlbumId);
 
         if (error) {
@@ -166,10 +167,11 @@ $(document).ready(function() {
 
     $('#btn-save-deck-meta').click(async function() {
         const name = $('#input-deck-name').val();
+        const is_public = $('#input-deck-public').is(':checked');
 
         const { error } = await _supabase
             .from('decks')
-            .update({ name })
+            .update({ name, is_public })
             .eq('id', currentDeckId);
 
         if (error) {
@@ -328,10 +330,14 @@ async function loadDecks() {
     }
 
     decks.forEach(deck => {
+        const publicBadge = deck.is_public === false ? '<span style="color: #ff4757; font-size: 10px;"><i class="fas fa-eye-slash"></i> Privado</span>' : '<span style="color: #2ed573; font-size: 10px;"><i class="fas fa-eye"></i> Público</span>';
         const $card = $(`
             <div class="album-card">
                 <div class="deck-preview-icon"><i class="fas fa-layer-group fa-3x"></i></div>
-                <h3>${deck.name}</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                    <h3 style="margin:0;">${deck.name}</h3>
+                    ${publicBadge}
+                </div>
                 <div style="display:flex; gap:10px; margin-top:auto;">
                     <button class="btn btn-edit-deck" data-id="${deck.id}">Editar</button>
                     <button class="btn btn-danger btn-delete-deck" data-id="${deck.id}">Eliminar</button>
@@ -350,6 +356,7 @@ async function editDeck(deck) {
     currentDeckId = deck.id;
     $('#deck-editor-title').text(`Editando: ${deck.name}`);
     $('#input-deck-name').val(deck.name);
+    $('#input-deck-public').prop('checked', deck.is_public !== false);
 
     showView('deck-editor');
     loadDeckCards(deck.id);
@@ -459,10 +466,14 @@ async function loadAlbums() {
 
     albums.forEach(album => {
         const cover = album.cover_image_url || 'https://via.placeholder.com/300x150?text=Sin+Portada';
+        const publicBadge = album.is_public === false ? '<span style="color: #ff4757; font-size: 10px;"><i class="fas fa-eye-slash"></i> Privado</span>' : '<span style="color: #2ed573; font-size: 10px;"><i class="fas fa-eye"></i> Público</span>';
         const $card = $(`
             <div class="album-card">
                 <img src="${cover}" alt="${album.title}">
-                <h3>${album.title}</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                    <h3 style="margin:0;">${album.title}</h3>
+                    ${publicBadge}
+                </div>
                 <div style="display:flex; gap:10px; margin-top:auto;">
                     <button class="btn btn-edit-album" data-id="${album.id}">Editar</button>
                     <button class="btn btn-danger btn-delete-album" data-id="${album.id}">Eliminar</button>
@@ -488,6 +499,7 @@ async function editAlbum(album) {
     $('#input-album-title').val(album.title);
     $('#input-album-cover').val(album.cover_image_url || '');
     $('#input-album-back').val(album.back_image_url || '');
+    $('#input-album-public').prop('checked', album.is_public !== false);
     
     showView('editor');
     loadAlbumPages(album.id);
