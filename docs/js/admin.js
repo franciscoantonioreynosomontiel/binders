@@ -75,7 +75,7 @@ $(document).ready(function() {
         }
 
         if (error) {
-            Swal.fire('Error', 'No se pudieron guardar los cambios', 'error');
+            Swal.fire('Error', 'No se pudieron guardar los cambios: ' + (error.message || ''), 'error');
             console.error(error);
         } else {
             Swal.fire({
@@ -150,7 +150,7 @@ $(document).ready(function() {
         }
 
         if (error) {
-            Swal.fire('Error', 'No se pudo guardar la información de la carta', 'error');
+            Swal.fire('Error', 'No se pudo guardar la información de la carta: ' + (error.message || ''), 'error');
             console.error(error);
         } else {
             Swal.fire({
@@ -213,7 +213,8 @@ $(document).ready(function() {
         }
 
         if (error) {
-            Swal.fire('Error', 'No se pudo actualizar el deck', 'error');
+            Swal.fire('Error', 'No se pudo actualizar el deck: ' + (error.message || ''), 'error');
+            console.error(error);
         } else {
             Swal.fire('¡Éxito!', 'Nombre del deck actualizado', 'success');
             loadDecks();
@@ -259,9 +260,10 @@ $(document).ready(function() {
 
         if (error) {
             if (error.code === '42703' || (error.message && error.message.includes('is_public'))) {
-                Swal.fire('Error de Base de Datos', 'La columna "is_public" no existe. Debes ejecutar el script SQL "update_visibility.sql" en tu panel de Supabase.', 'error');
+                Swal.fire('Error de Base de Datos', 'La columna "is_public" no existe. Debes ejecutar el script SQL "supabase_setup.sql" en tu panel de Supabase.', 'error');
             } else {
-                Swal.fire('Error', 'No se pudo actualizar la visibilidad', 'error');
+                Swal.fire('Error', 'No se pudo actualizar la visibilidad: ' + (error.message || ''), 'error');
+                console.error(error);
             }
             // Revert UI if error
             $(this).prop('checked', !isChecked);

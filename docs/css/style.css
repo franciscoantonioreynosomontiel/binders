@@ -66,14 +66,14 @@ body {
     box-shadow: 0 30px 60px rgba(0,0,0,0.8);  
     user-select: none;  
     position: relative;
-    margin: 0 auto;
-    left: 0;
-    top: 0;
+    /* Dejar que turn.js maneje el centrado via autoCenter: true */
+    margin: 0;
     will-change: transform;
     touch-action: none !important;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     transform: translate3d(0,0,0);
+    will-change: transform;
 }
 
 /* Ensure internal turn.js elements are properly positioned and visible */
@@ -951,9 +951,7 @@ input:checked + .slider:before {
     }
 
     .album {
-        margin: 0 auto;
-        left: 0;
-        top: 0;
+        margin: 0;
         box-shadow: 0 5px 15px rgba(0,0,0,0.5);
     }
 
