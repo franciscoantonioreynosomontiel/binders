@@ -10,21 +10,30 @@ $(document).ready(function() {
     checkSession();
 
     // Authentication Actions
-    $('#btn-login').click(handleLogin);
-    $('#btn-logout').click(handleLogout);
+    $('#btn-login').click(function(e) {
+        e.preventDefault();
+        handleLogin();
+    });
+    $('#btn-logout').click(function(e) {
+        e.preventDefault();
+        handleLogout();
+    });
 
     // Navigation
-    $('#btn-dashboard').click(function() {
+    $('#btn-dashboard').click(function(e) {
+        e.preventDefault();
         showView('dashboard');
         loadAlbums();
     });
 
-    $('#btn-decks').click(function() {
+    $('#btn-decks').click(function(e) {
+        e.preventDefault();
         showView('decks');
         loadDecks();
     });
 
-    $('#btn-create-album').click(async function() {
+    $('#btn-create-album').click(async function(e) {
+        e.preventDefault();
         if (!currentUser) return;
 
         const { data, error } = await _supabase
@@ -41,7 +50,8 @@ $(document).ready(function() {
     });
 
     // Album Meta Save
-    $('#btn-save-album-meta').click(async function() {
+    $('#btn-save-album-meta').click(async function(e) {
+        e.preventDefault();
         const title = $('#input-album-title').val();
         const cover = $('#input-album-cover').val();
         const back = $('#input-album-back').val();
@@ -52,6 +62,17 @@ $(document).ready(function() {
             .from('albums')
             .update(updateData)
             .eq('id', currentAlbumId);
+
+        // Fallback for missing column
+        if (error && (error.code === '42703' || (error.message && error.message.includes('is_public')))) {
+            console.warn("is_public column missing, retrying update without it.");
+            delete updateData.is_public;
+            const retry = await _supabase
+                .from('albums')
+                .update(updateData)
+                .eq('id', currentAlbumId);
+            error = retry.error;
+        }
 
         if (error) {
             Swal.fire('Error', 'No se pudieron guardar los cambios', 'error');
@@ -70,7 +91,8 @@ $(document).ready(function() {
     });
 
     // Page Management
-    $('#btn-add-page').click(async function() {
+    $('#btn-add-page').click(async function(e) {
+        e.preventDefault();
         const { data: pages } = await _supabase
             .from('pages')
             .select('page_index')
@@ -89,7 +111,7 @@ $(document).ready(function() {
             Swal.fire('Error', 'No se pudo añadir la página', 'error');
             console.error(error);
         } else {
-            loadAlbumPages(currentAlbumId);
+            loadAlbumPages(currentAlbumId, false);
         }
     });
 
@@ -100,7 +122,8 @@ $(document).ready(function() {
         loadSlotData(currentPageId, currentSlotIndex);
     });
 
-    $('#btn-save-slot').click(async function() {
+    $('#btn-save-slot').click(async function(e) {
+        e.preventDefault();
         const cardData = {
             image_url: $('#slot-image-url').val(),
             name: $('#slot-name').val(),
@@ -151,7 +174,8 @@ $(document).ready(function() {
     });
 
     // Deck Management Actions
-    $('#btn-create-deck').click(async function() {
+    $('#btn-create-deck').click(async function(e) {
+        e.preventDefault();
         if (!currentUser) return;
 
         const { data, error } = await _supabase
@@ -166,7 +190,8 @@ $(document).ready(function() {
         }
     });
 
-    $('#btn-save-deck-meta').click(async function() {
+    $('#btn-save-deck-meta').click(async function(e) {
+        e.preventDefault();
         const name = $('#input-deck-name').val();
         const is_public = $('#input-deck-public').is(':checked');
 
@@ -176,6 +201,17 @@ $(document).ready(function() {
             .update(updateData)
             .eq('id', currentDeckId);
 
+        // Fallback for missing column
+        if (error && (error.code === '42703' || (error.message && error.message.includes('is_public')))) {
+            console.warn("is_public column missing, retrying update without it.");
+            delete updateData.is_public;
+            const retry = await _supabase
+                .from('decks')
+                .update(updateData)
+                .eq('id', currentDeckId);
+            error = retry.error;
+        }
+
         if (error) {
             Swal.fire('Error', 'No se pudo actualizar el deck', 'error');
         } else {
@@ -184,7 +220,8 @@ $(document).ready(function() {
         }
     });
 
-    $('#btn-add-deck-card').click(async function() {
+    $('#btn-add-deck-card').click(async function(e) {
+        e.preventDefault();
         const { value: url } = await Swal.fire({
             title: 'Añadir imagen al deck',
             input: 'url',
@@ -221,7 +258,11 @@ $(document).ready(function() {
             .eq('id', id);
 
         if (error) {
-            Swal.fire('Error', 'No se pudo actualizar la visibilidad', 'error');
+            if (error.code === '42703' || (error.message && error.message.includes('is_public'))) {
+                Swal.fire('Error de Base de Datos', 'La columna "is_public" no existe. Debes ejecutar el script SQL "update_visibility.sql" en tu panel de Supabase.', 'error');
+            } else {
+                Swal.fire('Error', 'No se pudo actualizar la visibilidad', 'error');
+            }
             // Revert UI if error
             $(this).prop('checked', !isChecked);
             $label.text(!isChecked ? 'Público' : 'Privado');
@@ -347,12 +388,12 @@ async function loadDecks() {
         return;
     }
 
-    $('#deck-list').empty();
     if (decks.length === 0) {
         $('#deck-list').html('<div class="empty">No tienes decks. Crea uno para empezar.</div>');
         return;
     }
 
+    const $tempContainer = $('<div></div>');
     decks.forEach(deck => {
         const isPublic = deck.is_public !== false;
         const publicSwitch = `
@@ -381,11 +422,12 @@ async function loadDecks() {
             </div>
         `);
 
-        $card.find('.btn-edit-deck').click(() => editDeck(deck));
-        $card.find('.btn-delete-deck').click(() => deleteDeck(deck.id));
+        $card.find('.btn-edit-deck').click((e) => { e.preventDefault(); editDeck(deck); });
+        $card.find('.btn-delete-deck').click((e) => { e.preventDefault(); deleteDeck(deck.id); });
 
-        $('#deck-list').append($card);
+        $tempContainer.append($card);
     });
+    $('#deck-list').html($tempContainer.contents());
 }
 
 async function editDeck(deck) {
@@ -441,7 +483,7 @@ async function loadDeckCards(deckId) {
         return;
     }
 
-    $('#deck-card-list').empty();
+    const $tempContainer = $('<div></div>');
     cards.forEach(card => {
         const $cardItem = $(`
             <div class="album-card deck-card-item" style="cursor:pointer;">
@@ -452,11 +494,13 @@ async function loadDeckCards(deckId) {
         `);
 
         $cardItem.click((e) => {
+            e.preventDefault();
             if ($(e.target).hasClass('btn-delete-deck-card')) return;
             editDeckCard(card);
         });
 
         $cardItem.find('.btn-delete-deck-card').click(async (e) => {
+            e.preventDefault();
             e.stopPropagation();
             const res = await Swal.fire({
                 title: '¿Eliminar carta?',
@@ -470,8 +514,9 @@ async function loadDeckCards(deckId) {
             }
         });
 
-        $('#deck-card-list').append($cardItem);
+        $tempContainer.append($cardItem);
     });
+    $('#deck-card-list').html($tempContainer.contents());
 }
 
 function editDeckCard(card) {
@@ -503,12 +548,12 @@ async function loadAlbums() {
         return;
     }
 
-    $('#album-list').empty();
     if (albums.length === 0) {
         $('#album-list').html('<div class="empty">No tienes álbumes. Crea uno para empezar.</div>');
         return;
     }
 
+    const $tempContainer = $('<div></div>');
     albums.forEach(album => {
         const cover = album.cover_image_url || 'https://via.placeholder.com/300x150?text=Sin+Portada';
         const isPublic = album.is_public !== false;
@@ -538,11 +583,12 @@ async function loadAlbums() {
             </div>
         `);
 
-        $card.find('.btn-edit-album').click(() => editAlbum(album));
-        $card.find('.btn-delete-album').click(() => deleteAlbum(album.id));
+        $card.find('.btn-edit-album').click((e) => { e.preventDefault(); editAlbum(album); });
+        $card.find('.btn-delete-album').click((e) => { e.preventDefault(); deleteAlbum(album.id); });
 
-        $('#album-list').append($card);
+        $tempContainer.append($card);
     });
+    $('#album-list').html($tempContainer.contents());
 }
 
 function showView(view) {
@@ -594,8 +640,10 @@ async function deleteAlbum(id) {
     }
 }
 
-async function loadAlbumPages(albumId) {
-    $('#page-list').html('<div class="loading">Cargando páginas...</div>');
+async function loadAlbumPages(albumId, isInitial = true) {
+    if (isInitial) {
+        $('#page-list').html('<div class="loading">Cargando páginas...</div>');
+    }
 
     const { data: pages, error } = await _supabase
         .from('pages')
@@ -608,7 +656,18 @@ async function loadAlbumPages(albumId) {
         return;
     }
 
-    $('#page-list').empty();
+    // Obtener todos los slots de todas las páginas en una sola consulta
+    const pageIds = pages.map(p => p.id);
+    let allSlots = [];
+    if (pageIds.length > 0) {
+        const { data: slotsData } = await _supabase
+            .from('card_slots')
+            .select('*')
+            .in('page_id', pageIds);
+        allSlots = slotsData || [];
+    }
+
+    const $tempContainer = $('<div></div>');
     
     for (const page of pages) {
         const $pageItem = $(`
@@ -623,17 +682,16 @@ async function loadAlbumPages(albumId) {
             </div>
         `);
 
-        $pageItem.find('.btn-delete-page').click(() => deletePage(page.id));
+        $pageItem.find('.btn-delete-page').click((e) => {
+            e.preventDefault();
+            deletePage(page.id);
+        });
 
         const $grid = $pageItem.find('.grid-container');
-        
-        const { data: slots } = await _supabase
-            .from('card_slots')
-            .select('*')
-            .eq('page_id', page.id);
+        const pageSlots = allSlots.filter(s => s.page_id === page.id);
 
         for (let i = 0; i < 9; i++) {
-            const slotData = slots ? slots.find(s => s.slot_index === i) : null;
+            const slotData = pageSlots.find(s => s.slot_index === i);
             const $slot = $(`<div class="card-slot" data-index="${i}"></div>`);
             if (slotData && slotData.image_url) {
                 $slot.append(`<img src="${slotData.image_url}" class="tcg-card">`);
@@ -643,8 +701,10 @@ async function loadAlbumPages(albumId) {
             $grid.append($slot);
         }
 
-        $('#page-list').append($pageItem);
+        $tempContainer.append($pageItem);
     }
+
+    $('#page-list').html($tempContainer.contents());
 }
 
 async function deletePage(id) {
@@ -665,7 +725,7 @@ async function deletePage(id) {
             Swal.fire('Error', 'No se pudo eliminar la página', 'error');
         } else {
             Swal.fire('Eliminada', 'La página ha sido borrada', 'success');
-            loadAlbumPages(currentAlbumId);
+            loadAlbumPages(currentAlbumId, false);
         }
     }
 }

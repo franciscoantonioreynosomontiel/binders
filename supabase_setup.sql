@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS albums (
     title TEXT NOT NULL,
     cover_image_url TEXT,
     back_image_url TEXT,
+    is_public BOOLEAN DEFAULT true,
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -55,6 +56,7 @@ CREATE TABLE IF NOT EXISTS decks (
     id SERIAL PRIMARY KEY,
     user_id UUID REFERENCES usuarios(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
+    is_public BOOLEAN DEFAULT true,
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
