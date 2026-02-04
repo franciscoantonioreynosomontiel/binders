@@ -1,3 +1,0 @@
-127.0.0.1 - - [04/Feb/2026 14:23:28] "GET /test.html HTTP/1.1" 200 -
-127.0.0.1 - - [04/Feb/2026 14:23:28] "GET /css/testFlip.css HTTP/1.1" 200 -
-127.0.0.1 - - [04/Feb/2026 14:23:28] "GET /js/testTurn.js HTTP/1.1" 200 -

@@ -470,32 +470,22 @@ async function renderAlbum(album) {
         if (turnInitialized) return;
         turnInitialized = true;
 
-        const isMobile = window.innerWidth <= 640;
-
-        let width = 600;
-        let height = 420;
-        let display = 'double';
-
-        if (isMobile) {
-            display = 'double';
-            // Use nearly 100% of the container width to maximize space for the 6 columns
-            const containerWidth = $albumContainer.width() || window.innerWidth;
-            width = containerWidth * 0.98;
-            // Maintain 600:420 aspect ratio for the full open folder (two pages)
-            height = (width / 600) * 420;
-        }
+        // Usar dimensiones del DOM calculadas por CSS
+        const width = $albumDiv.width();
+        const height = $albumDiv.height();
+        const isMobile = window.innerWidth <= 992;
 
         $albumDiv.turn({
             width: width,
             height: height,
-            autoCenter: false,
+            autoCenter: true,
             gradients: true,
             acceleration: true,
-            display: display,
+            display: 'double',
             elevation: 50,
-            duration: 600,
-            // Increase corner size on mobile for easier flipping
-            cornerSize: isMobile ? 150 : 50,
+            duration: 1000,
+            // Ajustar cornerSize basado en el tamaño del álbum
+            cornerSize: isMobile ? 100 : 50,
             when: {
                 start: function(event, pageObject, corner) {
                     // Solo permitir el giro si es desde una esquina o disparado manualmente por búsqueda
