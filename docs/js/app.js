@@ -80,30 +80,51 @@ $(document).ready(async function() {
 
 function filterContent(query) {
     let anyVisible = false;
+    const keywords = query.toLowerCase().split(/\s+/).filter(k => k.length > 0);
+
+    if (keywords.length === 0) {
+        resetFilter();
+        return;
+    }
 
     // Filtrar álbumes
     $('.public-album-item').each(function() {
         const $album = $(this);
         const albumTitle = $album.find('.public-album-header').text().toLowerCase();
-        let albumMatch = albumTitle.includes(query);
-        let cardMatch = false;
+
+        // El álbum coincide si el título contiene TODOS los keywords
+        let albumTitleMatch = keywords.every(k => albumTitle.includes(k));
+
         let firstMatchPage = -1;
+        let anyCardMatches = false;
 
         $album.find('.card-slot').each(function() {
-            const cardName = ($(this).attr('data-name') || '').toLowerCase();
-            if (cardName.includes(query)) {
-                cardMatch = true;
+            const $slot = $(this);
+            const cardName = ($slot.attr('data-name') || '').toLowerCase();
+            const cardRarity = ($slot.attr('data-rarity') || '').toLowerCase();
+            const cardExpansion = ($slot.attr('data-expansion') || '').toLowerCase();
+            const cardCondition = ($slot.attr('data-condition') || '').toLowerCase();
+
+            // Combinar todos los campos para buscar keywords
+            const combinedText = `${cardName} ${cardRarity} ${cardExpansion} ${cardCondition}`;
+
+            // Una carta coincide si TODOS los keywords están presentes en sus campos
+            const cardMatch = keywords.every(k => combinedText.includes(k));
+
+            if (cardMatch) {
+                anyCardMatches = true;
                 if (firstMatchPage === -1) {
-                    const $page = $(this).closest('.page');
+                    const $page = $slot.closest('.page');
                     firstMatchPage = $page.index() + 1;
                 }
             }
         });
 
-        if (albumMatch || cardMatch) {
+        if (albumTitleMatch || anyCardMatches) {
             $album.show();
             anyVisible = true;
-            if (cardMatch && firstMatchPage !== -1) {
+            // Si hubo coincidencia en cartas, girar a la primera página que coincide
+            if (anyCardMatches && firstMatchPage !== -1) {
                 const $turnAlbum = $album.find('.album');
                 if ($turnAlbum.turn('is')) {
                     isManualPageTurn = true;
@@ -120,22 +141,31 @@ function filterContent(query) {
     $('.deck-public-item').each(function() {
         const $deck = $(this);
         const deckName = $deck.find('h3').text().toLowerCase();
-        let deckMatch = deckName.includes(query);
-        let cardMatch = false;
+
+        let deckNameMatch = keywords.every(k => deckName.includes(k));
+        let anyCardMatches = false;
         let firstMatchIndex = -1;
 
         $deck.find('.swiper-slide').each(function(index) {
-            const cardName = ($(this).attr('data-name') || '').toLowerCase();
-            if (cardName.includes(query)) {
-                cardMatch = true;
+            const $slot = $(this);
+            const cardName = ($slot.attr('data-name') || '').toLowerCase();
+            const cardRarity = ($slot.attr('data-rarity') || '').toLowerCase();
+            const cardExpansion = ($slot.attr('data-expansion') || '').toLowerCase();
+            const cardCondition = ($slot.attr('data-condition') || '').toLowerCase();
+
+            const combinedText = `${cardName} ${cardRarity} ${cardExpansion} ${cardCondition}`;
+            const cardMatch = keywords.every(k => combinedText.includes(k));
+
+            if (cardMatch) {
+                anyCardMatches = true;
                 if (firstMatchIndex === -1) firstMatchIndex = index;
             }
         });
 
-        if (deckMatch || cardMatch) {
+        if (deckNameMatch || anyCardMatches) {
             $deck.show();
             anyVisible = true;
-            if (cardMatch && firstMatchIndex !== -1) {
+            if (anyCardMatches && firstMatchIndex !== -1) {
                 const swiperEl = $deck.find('.swiper')[0];
                 if (swiperEl && swiperEl.swiper) {
                     swiperEl.swiper.slideTo(firstMatchIndex);
@@ -226,12 +256,31 @@ async function loadStoreData() {
 }
 
 async function loadPublicAlbums(userId) {
-    const { data: albums, error } = await _supabase
+    let query = _supabase
         .from('albums')
         .select('*')
         .eq('user_id', userId)
-        .neq('is_public', false)
         .order('id', { ascending: true });
+
+    let { data: albums, error } = await query;
+
+    // Fallback if query failed (might be schema mismatch)
+    if (error) {
+        console.warn("Error al cargar álbumes, intentando consulta básica.");
+        const retry = await _supabase
+            .from('albums')
+            .select('*')
+            .eq('user_id', userId)
+            .order('id', { ascending: true });
+        albums = retry.data;
+        error = retry.error;
+    }
+
+    if (albums) {
+        // Filtrar en JS para tratar null como público (true)
+        // Solo ocultamos si is_public es explícitamente false
+        albums = albums.filter(a => a.is_public !== false);
+    }
 
     if (error) {
         $('#albums-container').html('<div class="error">Error al cargar álbumes.</div>');
@@ -263,15 +312,36 @@ async function loadPublicDecks() {
 
     if (!user) return;
 
-    const { data: decks, error } = await _supabase
+    let query = _supabase
         .from('decks')
         .select(`
             *,
             deck_cards (*)
         `)
         .eq('user_id', user.id)
-        .neq('is_public', false)
         .order('created_at', { ascending: false });
+
+    let { data: decks, error } = await query;
+
+    // Fallback if query failed
+    if (error) {
+        console.warn("Error al cargar decks, intentando consulta básica.");
+        const retry = await _supabase
+            .from('decks')
+            .select(`
+                *,
+                deck_cards (*)
+            `)
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false });
+        decks = retry.data;
+        error = retry.error;
+    }
+
+    if (decks) {
+        // Filtrar en JS para tratar null como público (true)
+        decks = decks.filter(d => d.is_public !== false);
+    }
 
     if (error || !decks) {
         $('#decks-container').html('<div class="error">No se pudieron cargar los decks.</div>');
@@ -408,13 +478,13 @@ async function renderAlbum(album) {
         if (isMobile) {
             display = 'double';
             const containerWidth = $albumContainer.width() || window.innerWidth;
-            width = containerWidth * 0.98;
-            height = (width / 600) * 420;
+            width = Math.floor(containerWidth * 0.98);
+            height = Math.floor((width / 600) * 420);
         }
 
         $albumDiv.turn({
-            width: width,
-            height: height,
+            width: Math.floor(width),
+            height: Math.floor(height),
             autoCenter: false,
             gradients: true,
             acceleration: true,
