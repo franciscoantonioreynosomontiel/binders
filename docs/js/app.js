@@ -22,39 +22,35 @@ $(document).ready(async function() {
         switchView('decks');
     }
 
-    // --- Card Interaction Logic ---
-    // Seguimiento global para gestos de arrastre
-    $(document).on("touchstart mousedown", function(e) {
+    // --- Card Interaction Logic (Click Protection) ---
+    $(document).on("touchstart mousedown", ".card-slot", function(e) {
+        isDragging = false;
         const ev = e.type.startsWith('touch') ? e.originalEvent.touches[0] : e;
         startX = ev.pageX;
         startY = ev.pageY;
-        isDragging = false;
     });
 
-    $(document).on("touchmove mousemove", function(e) {
+    $(document).on("touchmove mousemove", ".card-slot", function(e) {
         if (startX === undefined || startY === undefined) return;
         const ev = e.type.startsWith('touch') ? e.originalEvent.touches[0] : e;
-        const dx = Math.abs(ev.pageX - startX);
-        const dy = Math.abs(ev.pageY - startY);
-
-        if (dx > 5 || dy > 5) {
-            isMoving = true;
-        }
-        if (dx > 15 || dy > 15) {
+        if (Math.abs(ev.pageX - startX) > 5 || Math.abs(ev.pageY - startY) > 5) {
             isDragging = true;
         }
     });
 
     $(document).on("touchend mouseup", function() {
-        setTimeout(() => {
-            startX = undefined;
-            startY = undefined;
-        }, 50);
-        // Reset flags con un poco de delay para que el click lo detecte
-        setTimeout(() => {
-            isDragging = false;
-            isMoving = false;
-        }, 200);
+        startX = undefined;
+        startY = undefined;
+        setTimeout(() => { isDragging = false; }, 100);
+    });
+
+    $(document).on("click", ".card-slot", function(e) {
+        if (isDragging) return;
+        const $slot = $(this);
+        if ($slot.closest('.album').length > 0) {
+            e.stopPropagation();
+        }
+        openCardModal($slot);
     });
 
     $(document).on("click", "#close-btn, #image-overlay", function(e) {
@@ -94,7 +90,7 @@ function filterContent(query) {
             let firstMatchPage = -1;
 
             $album.find('.card-slot').each(function() {
-                const cardName = ($(this).data('name') || '').toLowerCase();
+                const cardName = ($(this).attr('data-name') || '').toLowerCase();
                 if (cardName.includes(query)) {
                     cardMatch = true;
                     if (firstMatchPage === -1) {
@@ -306,7 +302,6 @@ async function loadPublicDecks() {
             preventClicksPropagation: false,
             on: {
                 click: function(s, e) {
-                    // Si no estamos arrastrando, abrimos el modal
                     if (!isDragging) {
                         const $slot = $(e.target).closest('.card-slot');
                         if ($slot.length) openCardModal($slot);
@@ -369,22 +364,6 @@ async function renderAlbum(album) {
             $grid.append($slot);
         }
 
-        // Seguimiento de inicio de toque/click para distinguir arrastre de click
-        $grid.on("touchstart mousedown", ".card-slot", function(e) {
-            const ev = e.type.startsWith('touch') ? e.originalEvent.touches[0] : e;
-            startX = ev.pageX;
-            startY = ev.pageY;
-            isDragging = false;
-            isMoving = false;
-            // No usamos stopPropagation aquí para permitir que Turn.js detecte gestos en las esquinas
-        });
-
-        $grid.on("click", ".card-slot", function(e) {
-            if (isDragging) return;
-            e.stopPropagation(); // Detener para que el click solo abra el modal
-            openCardModal($(this));
-        });
-
         $pageDiv.append($grid).appendTo($albumDiv);
     }
 
@@ -401,50 +380,33 @@ async function renderAlbum(album) {
         if (turnInitialized) return;
         turnInitialized = true;
 
-        const $wrapper = $albumContainer.find('.album-wrapper');
-        const containerWidth = $albumContainer.width() || window.innerWidth;
+        const isMobile = window.innerWidth <= 640;
 
-        // Usar Math.floor para evitar problemas de redondeo de sub-pixeles
         let width = 600;
         let height = 420;
+        let display = 'double';
 
-        if (containerWidth < 650) {
-            width = Math.floor(containerWidth * 0.95);
-            height = Math.floor((width / 600) * 420);
+        if (isMobile) {
+            display = 'double';
+            const containerWidth = $albumContainer.width() || window.innerWidth;
+            width = containerWidth * 0.98;
+            height = (width / 600) * 420;
         }
-
-        $wrapper.css({ width: width, height: height });
 
         $albumDiv.turn({
             width: width,
             height: height,
-            autoCenter: false, // Desactivado para que el álbum no se desplace horizontalmente al abrirse
+            autoCenter: false,
             gradients: true,
-            acceleration: true, // Activado para mayor fluidez, el desplazamiento se corregirá vía CSS
-            display: 'double',
+            acceleration: true,
+            display: display,
             elevation: 50,
             duration: 600,
-            cornerSize: 50,
+            cornerSize: isMobile ? 150 : 50,
             when: {
-                start: function(e, p, corner) {
-                    // Si no hay movimiento (es un click estático) y estamos en una carta, cancelamos
-                    if (!isMoving) {
-                        const target = e.target || e.srcElement;
-                        if ($(target).closest('.card-slot').length > 0) {
-                            e.preventDefault();
-                            return;
-                        }
-                    }
-
-                    // Si no es una esquina válida para arrastrar, cancelamos el inicio automático por click
-                    if (!corner && !isMoving) {
-                        e.preventDefault();
-                    }
-                },
-                turning: function(e, page, view) {
-                    // Solo permitimos el giro si es manual (isManualPageTurn) o si hay movimiento real (arrastre)
-                    if (!isMoving && !isManualPageTurn) {
-                        e.preventDefault();
+                start: function(event, pageObject, corner) {
+                    if (!corner) {
+                        event.preventDefault();
                     }
                 }
             }
