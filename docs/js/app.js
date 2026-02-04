@@ -115,7 +115,8 @@ function filterContent(query) {
                 anyCardMatches = true;
                 if (firstMatchPage === -1) {
                     const $page = $slot.closest('.page');
-                    firstMatchPage = $page.index() + 1;
+                    // Usar index relativo a todas las páginas del álbum para obtener el número de página correcto
+                    firstMatchPage = $album.find('.page').index($page) + 1;
                 }
             }
         });
@@ -126,10 +127,10 @@ function filterContent(query) {
             // Si hubo coincidencia en cartas, girar a la primera página que coincide
             if (anyCardMatches && firstMatchPage !== -1) {
                 const $turnAlbum = $album.find('.album');
-                if ($turnAlbum.turn('is')) {
+                if ($turnAlbum.turn('is') && $turnAlbum.turn('page') !== firstMatchPage) {
                     isManualPageTurn = true;
                     $turnAlbum.turn('page', firstMatchPage);
-                    setTimeout(() => { isManualPageTurn = false; }, 100);
+                    setTimeout(() => { isManualPageTurn = false; }, 1000);
                 }
             }
         } else {
