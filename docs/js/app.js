@@ -486,12 +486,12 @@ async function renderAlbum(album) {
         $albumDiv.turn({
             width: Math.floor(width),
             height: Math.floor(height),
-            autoCenter: false,
+            autoCenter: true,
             gradients: true,
             acceleration: true,
             display: display,
             elevation: 50,
-            duration: 600,
+            duration: 400,
             cornerSize: isMobile ? 150 : 50,
             when: {
                 start: function(event, pageObject, corner) {
