@@ -53,17 +53,6 @@ $(document).ready(function() {
             .update(updateData)
             .eq('id', currentAlbumId);
 
-        // Fallback if is_public column doesn't exist
-        if (error && error.message.includes('is_public')) {
-            console.warn("Columna is_public no encontrada, intentando guardado básico.");
-            delete updateData.is_public;
-            const retry = await _supabase
-                .from('albums')
-                .update(updateData)
-                .eq('id', currentAlbumId);
-            error = retry.error;
-        }
-
         if (error) {
             Swal.fire('Error', 'No se pudieron guardar los cambios', 'error');
             console.error(error);
@@ -186,17 +175,6 @@ $(document).ready(function() {
             .from('decks')
             .update(updateData)
             .eq('id', currentDeckId);
-
-        // Fallback if is_public column doesn't exist
-        if (error && error.message.includes('is_public')) {
-            console.warn("Columna is_public no encontrada, intentando guardado básico.");
-            delete updateData.is_public;
-            const retry = await _supabase
-                .from('decks')
-                .update(updateData)
-                .eq('id', currentDeckId);
-            error = retry.error;
-        }
 
         if (error) {
             Swal.fire('Error', 'No se pudo actualizar el deck', 'error');
@@ -411,13 +389,22 @@ async function loadDecks() {
 }
 
 async function editDeck(deck) {
-    currentDeckId = deck.id;
-    $('#deck-editor-title').text(`Editando: ${deck.name}`);
-    $('#input-deck-name').val(deck.name);
-    $('#input-deck-public').prop('checked', deck.is_public !== false);
+    // Re-fetch para evitar datos obsoletos del cierre
+    const { data: latestDeck } = await _supabase
+        .from('decks')
+        .select('*')
+        .eq('id', deck.id)
+        .single();
+
+    const target = latestDeck || deck;
+
+    currentDeckId = target.id;
+    $('#deck-editor-title').text(`Editando: ${target.name}`);
+    $('#input-deck-name').val(target.name);
+    $('#input-deck-public').prop('checked', target.is_public !== false);
 
     showView('deck-editor');
-    loadDeckCards(deck.id);
+    loadDeckCards(target.id);
 }
 
 async function deleteDeck(id) {
@@ -564,15 +551,24 @@ function showView(view) {
 }
 
 async function editAlbum(album) {
-    currentAlbumId = album.id;
-    $('#editor-title').text(`Editando: ${album.title}`);
-    $('#input-album-title').val(album.title);
-    $('#input-album-cover').val(album.cover_image_url || '');
-    $('#input-album-back').val(album.back_image_url || '');
-    $('#input-album-public').prop('checked', album.is_public !== false);
+    // Re-fetch para evitar datos obsoletos del cierre
+    const { data: latestAlbum } = await _supabase
+        .from('albums')
+        .select('*')
+        .eq('id', album.id)
+        .single();
+
+    const target = latestAlbum || album;
+
+    currentAlbumId = target.id;
+    $('#editor-title').text(`Editando: ${target.title}`);
+    $('#input-album-title').val(target.title);
+    $('#input-album-cover').val(target.cover_image_url || '');
+    $('#input-album-back').val(target.back_image_url || '');
+    $('#input-album-public').prop('checked', target.is_public !== false);
     
     showView('editor');
-    loadAlbumPages(album.id);
+    loadAlbumPages(target.id);
 }
 
 async function deleteAlbum(id) {
@@ -675,6 +671,7 @@ async function deletePage(id) {
 }
 
 async function loadSlotData(pageId, slotIndex) {
+    editingType = 'slot';
     const { data, error } = await _supabase
         .from('card_slots')
         .select('*')

@@ -55,6 +55,9 @@ body {
     transform-origin: center center;
     transition: transform 0.3s ease;
     touch-action: pan-y;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 } 
 
 .album {    
@@ -63,9 +66,9 @@ body {
     box-shadow: 0 30px 60px rgba(0,0,0,0.8);  
     user-select: none;  
     position: relative;
-    margin: 0 auto !important;
-    left: 0 !important;
-    top: 0 !important;
+    margin: 0 auto;
+    left: 0;
+    top: 0;
     will-change: transform;
     touch-action: none !important;
     backface-visibility: hidden;
@@ -537,10 +540,17 @@ body {
 }
 
 .page-list-container {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr;
     gap: 40px;
     margin-top: 20px;
+}
+
+@media (min-width: 1024px) {
+    .page-list-container {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+    }
 }
 
 .admin-page-item {
@@ -941,9 +951,9 @@ input:checked + .slider:before {
     }
 
     .album {
-        margin: 0 auto !important;
-        left: 0 !important;
-        top: 0 !important;
+        margin: 0 auto;
+        left: 0;
+        top: 0;
         box-shadow: 0 5px 15px rgba(0,0,0,0.5);
     }
 
