@@ -478,20 +478,23 @@ async function renderAlbum(album) {
 
         if (isMobile) {
             display = 'double';
+            // Use nearly 100% of the container width to maximize space for the 6 columns
             const containerWidth = $albumContainer.width() || window.innerWidth;
-            width = Math.floor(containerWidth * 0.98);
-            height = Math.floor((width / 600) * 420);
+            width = containerWidth * 0.98;
+            // Maintain 600:420 aspect ratio for the full open folder (two pages)
+            height = (width / 600) * 420;
         }
 
         $albumDiv.turn({
-            width: Math.floor(width),
-            height: Math.floor(height),
+            width: width,
+            height: height,
             autoCenter: false,
             gradients: true,
             acceleration: true,
             display: display,
             elevation: 50,
-            duration: 400,
+            duration: 600,
+            // Increase corner size on mobile for easier flipping
             cornerSize: isMobile ? 150 : 50,
             when: {
                 start: function(event, pageObject, corner) {
