@@ -940,7 +940,7 @@ input:checked + .slider:before {
     .album-wrapper {
         width: 100%;
         /* Ajuste para que no se vea tan alargado/vacío en móvil */
-        height: 280px;
+        height: 400px;
         margin: 10px auto;
         position: relative;
         overflow: hidden;
