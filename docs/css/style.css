@@ -3,7 +3,7 @@
 * {
     box-sizing: border-box;
 }
- 
+
 html, body {
     overflow-x: hidden !important;
     width: 100%;
@@ -24,7 +24,7 @@ body {
 .public-body {
     flex-direction: column;
     justify-content: flex-start;
-    align-items: center; 
+    align-items: center;
 }
 
 @media (min-width: 1024px) {
@@ -55,12 +55,13 @@ body {
     touch-action: pan-y;
     width: 922px;
     height: 700px;
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
-}  
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
 /* ===== Tamaños responsivos del álbum (Configuración del Test) ===== */
+/* AQUÍ puedes modificar el ALTO de la carpeta (la propiedad height) */
 .album {
     width: 600px;
     height: 420px;
@@ -109,6 +110,8 @@ body {
     border-radius: 0 5px 5px 0;
 }
 
+/* AQUÍ puedes modificar las dimensiones de las cartas tanto el ancho como el alto en la filas de las columnas */
+/* repeat(3, 1fr) significa 3 columnas/filas. Puedes cambiar el 3 por otro número */
 .grid-container {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -120,19 +123,20 @@ body {
 
 .card-slot {
     background: #252525;
-    border-radius: 4px;
+    border-radius: 6px;
     overflow: hidden;
     cursor: pointer;
     border: 1px solid #3d3d3d;
     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     position: relative;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 
 .card-slot:hover {
     transform: scale(1.05) translateY(-5px);
     z-index: 10;
     border-color: #00a8ff;
-    box-shadow: 0 5px 15px rgba(0,168,255,0.3);
+    box-shadow: 0 0 20px rgba(0,168,255,0.5);
 }
 
 .tcg-card {
@@ -205,7 +209,7 @@ body {
 
 #close-btn:hover {
     color: #fff;
-}  
+}
 
 .card-info {
     width: 100%;
@@ -288,10 +292,10 @@ body {
 
 .tile {
     aspect-ratio: 1 / 1;
-    border-radius: 24px; 
+    border-radius: 24px;
     border: none;
-    display: flex; 
-    flex-direction: column; 
+    display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     gap: 15px;
@@ -421,7 +425,7 @@ body {
 .admin-header {
     width: 100%;
     text-align: center;
-    color: white; 
+    color: white;
     margin-bottom: 40px;
 }
 
@@ -448,14 +452,14 @@ body.modal-open {
 
 .album-card {
     background: #1a1a1a;
-    border: 1px solid #333; 
+    border: 1px solid #333;
     border-radius: 16px;
     padding: 20px;
     display: flex;
     flex-direction: column;
     gap: 15px;
     transition: all 0.3s;
-} 
+}
 
 .album-card:hover {
     border-color: #00a8ff;
@@ -465,9 +469,9 @@ body.modal-open {
 .album-card img {
     width: 100%;
     height: 150px;
-    object-fit: cover; 
+    object-fit: cover;
     border-radius: 8px;
-} 
+}
 
 .deck-preview-icon {
     width: 100%;
@@ -478,7 +482,7 @@ body.modal-open {
     background: #1e293b;
     border-radius: 8px;
     color: #6366f1;
-} 
+}
 
 .album-list {
     display: grid;
@@ -493,8 +497,8 @@ body.modal-open {
 
 .form-group {
     margin-bottom: 20px;
-    width: 100%; 
-} 
+    width: 100%;
+}
 
 .form-group label {
     display: block;
@@ -502,8 +506,8 @@ body.modal-open {
     margin-bottom: 8px;
     font-size: 12px;
     text-transform: uppercase;
-    font-weight: 700; 
-} 
+    font-weight: 700;
+}
 
 .form-group input, .form-group select {
     width: 100%;
@@ -539,7 +543,7 @@ body.modal-open {
 }
 
 .page-list-container {
-    display: grid; 
+    display: grid;
     grid-template-columns: 1fr;
     gap: 40px;
     margin-top: 20px;
@@ -601,9 +605,9 @@ body.modal-open {
     color: #666;
     font-style: italic;
     text-align: center;
-    width: 100%; 
+    width: 100%;
     padding: 20px;
-} 
+}
 
 .error {
     color: #ff4757;
@@ -694,8 +698,8 @@ input:checked + .slider:before {
 .user-table th, .user-table td {
     border: 1px solid #333;
     padding: 12px;
-    text-align: left; 
-} 
+    text-align: left;
+}
 
 .user-table th {
     background: #252525;
@@ -809,9 +813,9 @@ input:checked + .slider:before {
 }
 
 .search-box i {
-    color: #666; 
+    color: #666;
     margin-right: 15px;
-} 
+}
 
 .search-box input {
     background: none;
@@ -821,7 +825,7 @@ input:checked + .slider:before {
     width: 100%;
     font-family: inherit;
     font-size: 1rem;
-} 
+}
 
 .search-box input:focus {
     outline: none;
@@ -833,7 +837,7 @@ input:checked + .slider:before {
     color: #666;
     cursor: pointer;
     padding: 5px;
-} 
+}
 
 #clear-search:hover {
     color: white;
@@ -939,10 +943,11 @@ input:checked + .slider:before {
 
     .album-wrapper {
         width: 100%;
-        height: auto;
-        margin: 20px auto;
+        /* Ajuste para que no se vea tan alargado/vacío en móvil */
+        height: 280px;
+        margin: 10px auto;
         position: relative;
-        overflow: visible;
+        overflow: hidden;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -950,8 +955,9 @@ input:checked + .slider:before {
     }
 
     .album {
-        width: 90vw;
-        height: 63vw;
+        /* Escalamos el álbum para que quepa en la mayoría de móviles */
+        transform: scale(0.55);
+        transform-origin: center center;
         margin: 0 auto !important;
         box-shadow: 0 5px 15px rgba(0,0,0,0.5);
     }
@@ -1195,4 +1201,4 @@ input:checked + .slider:before {
     background-size: 300% 300%;
     background-position: calc(var(--mx, 0.5) * 100%) calc(var(--my, 0.5) * 100%);
     mix-blend-mode: overlay;
-} 
+}
