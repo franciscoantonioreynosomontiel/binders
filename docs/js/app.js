@@ -3,10 +3,6 @@ let isMoving = false;
 let isManualPageTurn = false;
 let startX, startY;
 
-// Variables para el control de movimiento del álbum
-let isAlbumMoving = false;
-let albumStartX, albumStartY;
-
 $(document).ready(async function() {
     if ($.isTouch === undefined) {
         $.isTouch = 'ontouchstart' in window;
@@ -46,11 +42,7 @@ $(document).ready(async function() {
         startX = undefined;
         startY = undefined;
         setTimeout(() => { isDragging = false; }, 100);
-
-        albumStartX = undefined;
-        albumStartY = undefined;
     });
-
 
     $(document).on("click", ".card-slot", function(e) {
         if (isDragging) return;
@@ -590,27 +582,6 @@ async function renderAlbum(album) {
     const $albumDiv = $albumContainer.find('.album');
     $('#albums-container').append($albumContainer);
 
-    // --- Album Interaction Logic ---
-    $albumDiv.on("touchstart mousedown", function(e) {
-        isAlbumMoving = false;
-        const ev = e.type.startsWith('touch') ? (e.originalEvent.touches ? e.originalEvent.touches[0] : e) : e;
-        albumStartX = ev.pageX;
-        albumStartY = ev.pageY;
-    });
-
-    $albumDiv.on("touchmove mousemove", function(e) {
-        if (albumStartX === undefined || albumStartY === undefined) return;
-        const ev = e.type.startsWith('touch') ? (e.originalEvent.touches ? e.originalEvent.touches[0] : e) : e;
-        if (Math.abs(ev.pageX - albumStartX) > 5 || Math.abs(ev.pageY - albumStartY) > 5) {
-            isAlbumMoving = true;
-        }
-    });
-
-    $albumDiv.on("touchend mouseup", function() {
-        // Pequeño delay para asegurar que Turn.js procese los eventos con el estado correcto
-        setTimeout(() => { isAlbumMoving = false; }, 150);
-    });
-
     const { data: pages } = await _supabase
         .from('pages')
         .select('*')
@@ -623,7 +594,7 @@ async function renderAlbum(album) {
     for (const page of pages) {
         const $pageDiv = $('<div class="page"></div>');
         const $grid = $('<div class="grid-container"></div>');
-        
+
         const { data: slots } = await _supabase
             .from('card_slots')
             .select('*')
@@ -665,46 +636,25 @@ async function renderAlbum(album) {
         if (turnInitialized) return;
         turnInitialized = true;
 
-        // Calcular dimensiones basadas en el contenedor para evitar estiramiento en móvil
-        const containerWidth = $albumContainer.find('.album-wrapper').width();
-        const isMobile = window.innerWidth <= 640;
-
-        let width = 600;
-        let height = 420;
-
-        if (isMobile || containerWidth < 600) {
-            width = containerWidth;
-            height = Math.floor(width * (420 / 600));
-        }
+        const isMobile = window.innerWidth <= 992;
+        const width = $albumDiv.width();
+        const height = isMobile ? Math.floor(width * (420 / 600)) : 420;
 
         $albumDiv.turn({
             width: width,
             height: height,
             autoCenter: true,
-            gradients: !isMobile, // Desactivar gradientes en móvil para evitar traslapes
+            gradients: true,
             acceleration: true,
             display: 'double',
-            elevation: 0,
+            elevation: 50,
             duration: 1000,
-            // Ajustar cornerSize a un valor mínimo en móvil
-            cornerSize: isMobile ? 20 : 50,
+            cornerSize: isMobile ? 100 : 50,
             when: {
                 start: function(event, pageObject, corner) {
-                    // Solo permitir el inicio si es desde una esquina o disparado manualmente
                     if (!corner && !isManualPageTurn) {
                         event.preventDefault();
                     }
-                },
-                turned: function(event, page, view) {
-                    // Desactivar pointer-events en páginas que no están en la vista actual para evitar traslapes
-                    $(this).find('.page-wrapper').each(function() {
-                        const p = parseInt($(this).attr('page'));
-                        if (view.indexOf(p) !== -1) {
-                            this.style.setProperty('pointer-events', 'auto', 'important');
-                        } else {
-                            this.style.setProperty('pointer-events', 'none', 'important');
-                        }
-                    });
                 }
             }
         });
