@@ -123,36 +123,53 @@
     mix-blend-mode: overlay;
 }
 
-/* --- GHOST RARE (Color reveal según ángulo) --- */
+/* --- GHOST RARE --- */
 /* La imagen base debe verse pálida */
 .ghost-rare .card-image {
-    filter: brightness(1.2) contrast(0.8) saturate(0.2) grayscale(0.5);
+    filter: grayscale(1) brightness(1.2) contrast(0.8);
     transition: filter 0.3s;
 }
 
 .ghost-rare .holo-layer {
     background: linear-gradient(
         var(--angle, 135deg),
-        rgba(255, 0, 255, 0.4),
-        rgba(0, 255, 255, 0.4),
-        rgba(0, 255, 0, 0.4),
-        rgba(255, 255, 0, 0.4)
+        rgba(255,0,0,0.3),
+        rgba(255,255,0,0.3),
+        rgba(0,255,0,0.3),
+        rgba(0,255,255,0.3),
+        rgba(0,0,255,0.3),
+        rgba(255,0,255,0.3),
+        rgba(255,0,0,0.3)
     );
     background-size: 400% 400%;
     background-position: calc(var(--mx) * 100%) calc(var(--my) * 100%);
-    mix-blend-mode: hard-light;
-    opacity: 0;
+    mix-blend-mode: color-dodge;
+    opacity: 0.5;
 }
 
-/* Al inclinar mucho, se revela el color */
-.ghost-rare.active .holo-layer,
-.ghost-rare:hover .holo-layer {
-    opacity: calc(var(--abs-rx) / 30 + var(--abs-ry) / 30);
-}
-
-.ghost-rare.active .card-image,
-.ghost-rare:hover .card-image {
-    filter: brightness(1) contrast(1) saturate(1) grayscale(0);
+/* --- FOIL --- */
+.foil .holo-layer {
+    background:
+        linear-gradient(
+            var(--angle, 135deg),
+            rgba(255,0,0,0.15),
+            rgba(255,255,0,0.15),
+            rgba(0,255,0,0.15),
+            rgba(0,255,255,0.15),
+            rgba(0,0,255,0.15),
+            rgba(255,0,255,0.15),
+            rgba(255,0,0,0.15)
+        ),
+        linear-gradient(
+            135deg,
+            rgba(255,255,255,0) 0%,
+            rgba(255,255,255,0.3) 50%,
+            rgba(255,255,255,0) 100%
+        );
+    background-size: 400% 400%, 200% 200%;
+    background-position: calc(var(--mx) * 100%) calc(var(--my) * 100%), calc(var(--mx) * 100%) calc(var(--my) * 100%);
+    mix-blend-mode: color-dodge;
+    opacity: 0.6;
 }
 
 /* Info Cards Styles */
