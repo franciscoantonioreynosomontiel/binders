@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS card_slots (
     condition TEXT,
     quantity INTEGER DEFAULT 1,
     price TEXT,
+    holo_effect TEXT,
     created_at TIMESTAMPTZ DEFAULT now(),
     UNIQUE(page_id, slot_index)
 );
@@ -71,6 +72,7 @@ CREATE TABLE IF NOT EXISTS deck_cards (
     condition TEXT,
     quantity INTEGER DEFAULT 1,
     price TEXT,
+    holo_effect TEXT,
     card_order INTEGER DEFAULT 0,
     created_at TIMESTAMPTZ DEFAULT now()
 );
