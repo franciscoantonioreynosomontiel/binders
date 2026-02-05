@@ -204,38 +204,15 @@ let currentRY = 0;
 let card3dActive = false;
 let card3dOrientationHandler = null;
 
-function init3DCard() {
-    const $container = $('#card-3d-container');
+function updateRotation() {
+    if (!card3dActive) return;
+
+    // LERP for smooth motion
+    currentRX += (targetRX - currentRX) * 0.1;
+    currentRY += (targetRY - currentRY) * 0.1;
+
     const $card = $('#card-3d');
-
-    if (card3dZtext) {
-        card3dZtext.destroy();
-    }
-
-    // Reset styles
-    $card.css('transform', '');
-    currentRX = 0;
-    currentRY = 0;
-    targetRX = 0;
-    targetRY = 0;
-
-    // Initialize ztext
-    card3dZtext = new Ztextify("#expanded-image", {
-        depth: "10px",
-        layers: 10,
-        fade: true,
-        direction: "both",
-        event: "none",
-        perspective: "500px"
-    });
-
-    const updateRotation = () => {
-        if (!card3dActive) return;
-
-        // LERP for smooth motion
-        currentRX += (targetRX - currentRX) * 0.1;
-        currentRY += (targetRY - currentRY) * 0.1;
-
+    if ($card.length) {
         $card.css('transform', `rotateX(${currentRX}deg) rotateY(${currentRY}deg)`);
 
         // Update holo effects variables
@@ -248,9 +225,38 @@ function init3DCard() {
             '--my': my,
             '--angle': `${angle}deg`
         });
+    }
 
-        requestAnimationFrame(updateRotation);
-    };
+    requestAnimationFrame(updateRotation);
+}
+
+function init3DCard() {
+    const $container = $('#card-3d-container');
+    const $card = $('#card-3d');
+    const $zContainer = $('#z-text-container');
+
+    if (!$zContainer.length) return;
+
+    // Reset styles
+    $card.css('transform', '');
+    currentRX = 0;
+    currentRY = 0;
+    targetRX = 0;
+    targetRY = 0;
+
+    // Initialize ztext
+    try {
+        card3dZtext = new Ztextify('#z-text-container', {
+            depth: "15px",
+            layers: 15,
+            fade: true,
+            direction: "both",
+            event: "none",
+            perspective: "500px"
+        });
+    } catch (e) {
+        console.error("Ztext init error:", e);
+    }
 
     $container.off('mousemove mouseleave touchmove touchend');
 
@@ -278,7 +284,7 @@ function init3DCard() {
         targetRY = ((x / rect.width) - 0.5) * 40;
         targetRX = ((y / rect.height) - 0.5) * -40;
         e.preventDefault();
-    });
+    }, { passive: false });
 
     $container.on('touchend', () => {
         targetRX = 0;
@@ -300,8 +306,10 @@ function init3DCard() {
         window.addEventListener('deviceorientation', card3dOrientationHandler);
     }
 
-    card3dActive = true;
-    requestAnimationFrame(updateRotation);
+    if (!card3dActive) {
+        card3dActive = true;
+        requestAnimationFrame(updateRotation);
+    }
 }
 
 function openCardModal($slot) {
@@ -317,13 +325,20 @@ function openCardModal($slot) {
     const quantity = $slot.data("quantity") || "1";
     const price = $slot.data("price") || "-";
 
+    // Reset the card container with a fresh image tag and preserve holo-layer
+    $("#card-3d").html(`
+        <div id="z-text-container">
+            <img id="expanded-image" src="${imgSrc}" alt="${name}">
+        </div>
+        <div class="holo-layer"></div>
+    `);
+
     const $card3d = $("#card-3d-container");
     $card3d.removeClass("super-rare ghost-rare foil rainbow active");
     if (holo) {
         $card3d.addClass(holo);
     }
 
-    $("#expanded-image").attr("src", imgSrc);
     $("#card-name").text(name);
     $("#card-rarity").text(rarity);
     $("#card-expansion").text(expansion);
@@ -337,7 +352,7 @@ function openCardModal($slot) {
     setTimeout(() => {
         init3DCard();
         $card3d.addClass("active");
-    }, 50);
+    }, 150);
 }
 
 async function switchView(view) {
