@@ -657,6 +657,7 @@ async function renderAlbum(album) {
                     // Solo permitir el giro si es desde una esquina o disparado manualmente por búsqueda
                     if (!corner && !isManualPageTurn) {
                         event.preventDefault();
+                        return;
                     }
                 }
             }
