@@ -1,8 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
-
-* {
-    box-sizing: border-box;
-}
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap'); 
+ 
+* {    
+    box-sizing: border-box;    
+}    
 
 html, body {
     overflow-x: hidden !important;
@@ -10,16 +10,16 @@ html, body {
     position: relative;
 }
 
-body {
-    background-color: #0f0f0f;
-    background-image: radial-gradient(circle at center, #1a2a3a 0%, #000000 100%);
-    margin: 0;
-    min-height: 100vh;
-    font-family: 'Montserrat', sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
+body {    
+    background-color: #0f0f0f;    
+    background-image: radial-gradient(circle at center, #1a2a3a 0%, #000000 100%);    
+    margin: 0;    
+    min-height: 100vh;    
+    font-family: 'Montserrat', sans-serif;    
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+}  
 
 .public-body {
     flex-direction: column;
@@ -34,20 +34,20 @@ body {
     }
 }
 
-.main-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 40px;
-    padding: 40px;
-    width: 100%;
-    max-width: 1400px;
-    flex-wrap: wrap;
-}
+.main-container {  
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    gap: 40px; 
+    padding: 40px; 
+    width: 100%; 
+    max-width: 1400px; 
+    flex-wrap: wrap; 
+}  
 
-.album-wrapper {
+.album-wrapper { 
     flex: 0 0 auto;
-    perspective: 2000px;
+    perspective: 2000px; 
     position: relative;
     overflow: visible;
     transform-origin: center center;
@@ -58,15 +58,14 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-}
+} 
 
 /* ===== Tamaños responsivos del álbum (Configuración del Test) ===== */
-/* AQUÍ puedes modificar el ALTO de la carpeta (la propiedad height) */
-.album {
+.album {    
     width: 600px;
     height: 420px;
-    box-shadow: 0 30px 60px rgba(0,0,0,0.8);
-    user-select: none;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.8);  
+    user-select: none;  
     position: relative;
     margin: 0 !important;
     will-change: transform;
@@ -82,121 +81,118 @@ body {
     position: absolute !important;
 }
 
-.page {
-    background: #1a1a1a;
+.page {    
+    background: #1a1a1a;    
     padding: 12px;
-    border: 1px solid #333;
+    border: 1px solid #333;    
     width: 300px;
     height: 420px;
-    box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+    box-shadow: inset 0 0 50px rgba(0,0,0,0.5); 
     overflow: hidden;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     transform: translate3d(0,0,0);
-}
+}  
 
 
-.cover-page {
-    padding: 0;
-    background: none;
-    border: none;
-}
+.cover-page {  
+    padding: 0;  
+    background: none;  
+    border: none;  
+}  
 
-.cover-page img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    border-radius: 0 5px 5px 0;
-}
+.cover-page img {  
+    width: 100%;  
+    height: 100%;  
+    object-fit: cover;  
+    display: block;  
+    border-radius: 0 5px 5px 0; 
+}  
 
-/* AQUÍ puedes modificar las dimensiones de las cartas tanto el ancho como el alto en la filas de las columnas */
-/* repeat(3, 1fr) significa 3 columnas/filas. Puedes cambiar el 3 por otro número */
-.grid-container {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(3, 1fr);
-    gap: 8px;
-    height: 100%;
+.grid-container {    
+    display: grid;    
+    grid-template-columns: repeat(3, 1fr);    
+    grid-template-rows: repeat(3, 1fr);    
+    gap: 8px;    
+    height: 100%;    
     overflow: hidden;
-}
+}    
 
-.card-slot {
-    background: #252525;
-    border-radius: 6px;
-    overflow: hidden;
-    cursor: pointer;
-    border: 1px solid #3d3d3d;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    position: relative;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-}
+.card-slot {    
+    background: #252525;    
+    border-radius: 4px;    
+    overflow: hidden;    
+    cursor: pointer;    
+    border: 1px solid #3d3d3d;    
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);    
+    position: relative; 
+}    
 
-.card-slot:hover {
-    transform: scale(1.05) translateY(-5px);
-    z-index: 10;
-    border-color: #00a8ff;
-    box-shadow: 0 0 20px rgba(0,168,255,0.5);
-}
+.card-slot:hover {    
+    transform: scale(1.05) translateY(-5px);    
+    z-index: 10;    
+    border-color: #00a8ff; 
+    box-shadow: 0 5px 15px rgba(0,168,255,0.3); 
+}    
 
-.tcg-card {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+.tcg-card {    
+    width: 100%;    
+    height: 100%;    
+    object-fit: cover;    
     display: block;
     margin: 0;
-}
+}    
 
-/* Modal Overlay */
-.overlay {
-    display: none;
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.92);
-    z-index: 9999;
-    justify-content: center;
-    align-items: center;
-    backdrop-filter: blur(8px);
-}
+/* Modal Overlay */    
+.overlay {    
+    display: none;    
+    position: fixed;    
+    top: 0; left: 0; width: 100%; height: 100%;    
+    background: rgba(0, 0, 0, 0.92);    
+    z-index: 9999;    
+    justify-content: center;    
+    align-items: center;    
+    backdrop-filter: blur(8px); 
+}    
 
-.overlay.active { display: flex; }
+.overlay.active { display: flex; }    
 
-.overlay-content {
-    background: #111;
+.overlay-content { 
+    background: #111; 
     padding: 30px;
-    border-radius: 24px;
-    position: relative;
-    max-width: 500px;
+    border-radius: 24px; 
+    position: relative; 
+    max-width: 500px; 
     width: 95%;
     max-height: 90vh;
     overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    color: white;
-    border: 1px solid #333;
-    box-shadow: 0 0 100px rgba(0,168,255,0.1);
-}
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    color: white; 
+    border: 1px solid #333; 
+    box-shadow: 0 0 100px rgba(0,168,255,0.1); 
+} 
 
-#expanded-image {
-    width: 220px;
+#expanded-image {    
+    width: 220px; 
     max-width: 100%;
     height: auto;
     aspect-ratio: 220 / 308;
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-    margin-bottom: 25px;
-    object-fit: cover;
-    border: 1px solid #444;
-}
+    border-radius: 12px; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
+    margin-bottom: 25px; 
+    object-fit: cover; 
+    border: 1px solid #444; 
+}    
 
-#close-btn {
-    position: absolute;
+#close-btn {    
+    position: absolute;    
     top: 15px; right: 20px;
-    color: #666; font-size: 32px; cursor: pointer;
-    transition: color 0.2s;
+    color: #666; font-size: 32px; cursor: pointer; 
+    transition: color 0.2s; 
     z-index: 10;
-}
+} 
 
 @media (max-width: 640px) {
     #close-btn {
@@ -207,77 +203,77 @@ body {
     }
 }
 
-#close-btn:hover {
-    color: #fff;
-}
+#close-btn:hover { 
+    color: #fff; 
+} 
 
-.card-info {
-    width: 100%;
-    text-align: center;
-}
+.card-info { 
+    width: 100%; 
+    text-align: center; 
+} 
 
-.card-name {
-    color: #fff;
-    font-size: 24px;
-    font-weight: 700;
-    margin-bottom: 5px;
-    letter-spacing: -0.5px;
-}
+.card-name { 
+    color: #fff; 
+    font-size: 24px; 
+    font-weight: 700; 
+    margin-bottom: 5px; 
+    letter-spacing: -0.5px; 
+} 
 
-.info-grid {
-    margin-top: 25px;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    width: 100%;
-}
+.info-grid { 
+    margin-top: 25px; 
+    display: grid; 
+    grid-template-columns: repeat(2, 1fr); 
+    gap: 12px; 
+    width: 100%; 
+} 
 
-.info-item {
-    background: rgba(255, 255, 255, 0.03);
-    padding: 12px 16px;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    text-align: left;
-    transition: all 0.2s;
-}
+.info-item { 
+    background: rgba(255, 255, 255, 0.03); 
+    padding: 12px 16px; 
+    border-radius: 12px; 
+    border: 1px solid rgba(255, 255, 255, 0.05); 
+    text-align: left; 
+    transition: all 0.2s; 
+} 
 
-.info-item:hover {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(0, 168, 255, 0.3);
-    transform: translateY(-2px);
-}
+.info-item:hover { 
+    background: rgba(255, 255, 255, 0.06); 
+    border-color: rgba(0, 168, 255, 0.3); 
+    transform: translateY(-2px); 
+} 
 
-.info-label {
-    font-size: 10px;
-    color: #666;
-    text-transform: uppercase;
-    font-weight: 700;
-    margin-bottom: 4px;
-    letter-spacing: 1px;
-}
+.info-label { 
+    font-size: 10px; 
+    color: #666; 
+    text-transform: uppercase; 
+    font-weight: 700; 
+    margin-bottom: 4px; 
+    letter-spacing: 1px; 
+} 
 
-.info-value {
-    font-size: 15px;
-    font-weight: 700;
-    color: #eee;
-}
+.info-value { 
+    font-size: 15px; 
+    font-weight: 700; 
+    color: #eee; 
+} 
 
-.price-item {
-    grid-column: span 2;
-    background: linear-gradient(90deg, rgba(0, 168, 255, 0.1) 0%, rgba(0, 255, 136, 0.1) 100%);
-    border: 1px solid rgba(0, 168, 255, 0.2);
-}
+.price-item { 
+    grid-column: span 2; 
+    background: linear-gradient(90deg, rgba(0, 168, 255, 0.1) 0%, rgba(0, 255, 136, 0.1) 100%); 
+    border: 1px solid rgba(0, 168, 255, 0.2); 
+} 
 
-.price-item:hover {
-    border-color: rgba(0, 255, 136, 0.5);
-    box-shadow: 0 5px 15px rgba(0, 255, 136, 0.1);
-}
+.price-item:hover { 
+    border-color: rgba(0, 255, 136, 0.5); 
+    box-shadow: 0 5px 15px rgba(0, 255, 136, 0.1); 
+} 
 
-.price-item .info-value {
-    color: #00ff88;
-    font-size: 22px;
-    text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
-}
+.price-item .info-value { 
+    color: #00ff88; 
+    font-size: 22px; 
+    text-shadow: 0 0 10px rgba(0, 255, 136, 0.3); 
+} 
 
 /* Admin Panel Styles - Tile Grid */
 .tile-grid {
@@ -955,9 +951,6 @@ input:checked + .slider:before {
     }
 
     .album {
-        /* Escalamos el álbum para que quepa en la mayoría de móviles */
-        transform: scale(0.55);
-        transform-origin: center center;
         margin: 0 auto !important;
         box-shadow: 0 5px 15px rgba(0,0,0,0.5);
     }
