@@ -1,0 +1,14 @@
+127.0.0.1 - - [05/Feb/2026 07:43:52] "GET /public.html?store=Tienda%20Test HTTP/1.1" 200 -
+127.0.0.1 - - [05/Feb/2026 07:43:52] "GET /css/style.css HTTP/1.1" 200 -
+127.0.0.1 - - [05/Feb/2026 07:43:52] "GET /css/barajaryg.css HTTP/1.1" 200 -
+127.0.0.1 - - [05/Feb/2026 07:43:52] "GET /js/turn.js HTTP/1.1" 200 -
+127.0.0.1 - - [05/Feb/2026 07:43:52] "GET /js/supabase-config.js HTTP/1.1" 200 -
+127.0.0.1 - - [05/Feb/2026 07:43:52] "GET /js/ztext.js HTTP/1.1" 200 -
+127.0.0.1 - - [05/Feb/2026 07:43:52] "GET /js/app.js HTTP/1.1" 200 -
+127.0.0.1 - - [05/Feb/2026 07:44:16] "GET /public.html?store=Tienda%20Test HTTP/1.1" 200 -
+127.0.0.1 - - [05/Feb/2026 07:44:16] "GET /css/style.css HTTP/1.1" 200 -
+127.0.0.1 - - [05/Feb/2026 07:44:16] "GET /css/barajaryg.css HTTP/1.1" 200 -
+127.0.0.1 - - [05/Feb/2026 07:44:16] "GET /js/turn.js HTTP/1.1" 200 -
+127.0.0.1 - - [05/Feb/2026 07:44:16] "GET /js/supabase-config.js HTTP/1.1" 200 -
+127.0.0.1 - - [05/Feb/2026 07:44:16] "GET /js/ztext.js HTTP/1.1" 200 -
+127.0.0.1 - - [05/Feb/2026 07:44:16] "GET /js/app.js HTTP/1.1" 200 -
