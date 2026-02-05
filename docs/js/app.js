@@ -652,19 +652,30 @@ async function renderAlbum(album) {
             width: width,
             height: height,
             autoCenter: true,
-            gradients: true,
+            gradients: !isMobile, // Desactivar gradientes en móvil para evitar traslapes
             acceleration: true,
             display: 'double',
-            elevation: 50,
+            elevation: 0,
             duration: 1000,
-            // Ajustar cornerSize basado en el tamaño del álbum
-            cornerSize: isMobile ? 100 : 50,
+            // Ajustar cornerSize a un valor mínimo en móvil
+            cornerSize: isMobile ? 20 : 50,
             when: {
                 start: function(event, pageObject, corner) {
                     // Solo permitir el giro si es desde una esquina o disparado manualmente por búsqueda
                     if (!corner && !isManualPageTurn) {
                         event.preventDefault();
                     }
+                },
+                turned: function(event, page, view) {
+                    // Desactivar pointer-events en páginas que no están en la vista actual para evitar traslapes
+                    $(this).find('.page-wrapper').each(function() {
+                        const p = parseInt($(this).attr('page'));
+                        if (view.indexOf(p) !== -1) {
+                            this.style.setProperty('pointer-events', 'auto', 'important');
+                        } else {
+                            this.style.setProperty('pointer-events', 'none', 'important');
+                        }
+                    });
                 }
             }
         });
