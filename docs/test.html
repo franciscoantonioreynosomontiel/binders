@@ -38,6 +38,7 @@
             height: 392px;
             margin-bottom: 25px;
             perspective: 1000px;
+            touch-action: none; /* Prevenir scroll en móviles al interactuar */
         }
 
         #expanded-image-wrapper img {
@@ -48,7 +49,7 @@
             display: block;
         }
 
-        /* Capa Holográfica */
+        /* Capa Holográfica Mejorada */
         .holo-effect {
             position: absolute;
             top: 0;
@@ -58,18 +59,30 @@
             border-radius: 15px;
             z-index: 10;
             pointer-events: none;
-            mix-blend-mode: overlay;
-            opacity: 0.8;
-            background-image: linear-gradient(
-                135deg,
-                rgba(255, 255, 255, 0) 0%,
-                rgba(255, 255, 255, 0.1) 25%,
-                rgba(255, 255, 255, 0.4) 50%,
-                rgba(255, 255, 255, 0.1) 75%,
-                rgba(255, 255, 255, 0) 100%
-            );
-            background-size: 200% 200%;
-            background-position: var(--hx, 50%) var(--hy, 50%);
+            mix-blend-mode: color-dodge; /* Mejor para efectos de brillo */
+            opacity: 0.6;
+            background-image:
+                linear-gradient(
+                    135deg,
+                    rgba(255, 255, 255, 0) 0%,
+                    rgba(255, 255, 255, 0.1) 25%,
+                    rgba(255, 255, 255, 0.6) 50%,
+                    rgba(255, 255, 255, 0.1) 75%,
+                    rgba(255, 255, 255, 0) 100%
+                ),
+                linear-gradient(
+                    110deg,
+                    transparent 0%,
+                    rgba(255, 0, 0, 0.05) 15%,
+                    rgba(255, 255, 0, 0.05) 30%,
+                    rgba(0, 255, 0, 0.05) 45%,
+                    rgba(0, 255, 255, 0.05) 60%,
+                    rgba(0, 0, 255, 0.05) 75%,
+                    rgba(255, 0, 255, 0.05) 90%,
+                    transparent 100%
+                );
+            background-size: 200% 200%, 300% 300%;
+            background-position: var(--hx, 50%) var(--hy, 50%), var(--rx-pos, 50%) var(--ry-pos, 50%);
             transition: opacity 0.3s;
         }
 
@@ -144,9 +157,9 @@
                 // Intentar obtener el elemento ztext si aún no está en cache
                 if (!zText) zText = document.querySelector(".z-text");
 
-                // Suavizado del movimiento (Factor 0.05 para que sea lento y agradable)
-                currentRX += (targetRX - currentRX) * 0.05;
-                currentRY += (targetRY - currentRY) * 0.05;
+                // Suavizado del movimiento (Factor 0.1 para que sea un poco más rápido pero fluido)
+                currentRX += (targetRX - currentRX) * 0.1;
+                currentRY += (targetRY - currentRY) * 0.1;
 
                 // Aplicar rotación al elemento generado por ztext
                 if (zText) {
@@ -154,12 +167,19 @@
                 }
 
                 // Actualizar posición del brillo holográfico basado en la rotación
-                const hx = 50 + (currentRY * 2);
-                const hy = 50 + (currentRX * 2);
+                // hx y hy para el brillo blanco
+                const hx = 50 + (currentRY * 2.5);
+                const hy = 50 + (currentRX * 2.5);
+
+                // rx-pos y ry-pos para el efecto arcoiris (movimiento diferente)
+                const rxPos = 50 - (currentRY * 3);
+                const ryPos = 50 - (currentRX * 3);
 
                 if (wrapper) {
                     wrapper.style.setProperty('--hx', `${hx}%`);
                     wrapper.style.setProperty('--hy', `${hy}%`);
+                    wrapper.style.setProperty('--rx-pos', `${rxPos}%`);
+                    wrapper.style.setProperty('--ry-pos', `${ryPos}%`);
                 }
 
                 requestAnimationFrame(update);
@@ -170,31 +190,31 @@
 
             // Interacción con Mouse
             window.addEventListener("mousemove", (e) => {
-                // Mapear posición del mouse a grados de rotación (máx +/- 20deg)
-                targetRY = (e.clientX / window.innerWidth - 0.5) * 40;
-                targetRX = (e.clientY / window.innerHeight - 0.5) * -40;
+                // Mapear posición del mouse a grados de rotación (máx +/- 30deg)
+                targetRY = (e.clientX / window.innerWidth - 0.5) * 60;
+                targetRX = (e.clientY / window.innerHeight - 0.5) * -60;
             });
 
             // Interacción con Touch (Dedo)
             window.addEventListener("touchmove", (e) => {
                 if (e.touches.length > 0) {
                     const touch = e.touches[0];
-                    targetRY = (touch.clientX / window.innerWidth - 0.5) * 40;
-                    targetRX = (touch.clientY / window.innerHeight - 0.5) * -40;
+                    // Multiplicador aumentado para mayor velocidad
+                    targetRY = (touch.clientX / window.innerWidth - 0.5) * 70;
+                    targetRX = (touch.clientY / window.innerHeight - 0.5) * -70;
                 }
-            }, { passive: true });
+            }, { passive: false }); // Cambiado a passive: false para permitir preventDefault si fuera necesario, aunque usamos touch-action: none
 
             // Interacción con Giroscopio (Celular)
             window.addEventListener("deviceorientation", (e) => {
                 if (e.beta !== null && e.gamma !== null) {
-                    // beta (inclinación adelante/atrás): aprox 45 grados es posición normal de lectura
-                    // gamma (inclinación izquierda/derecha)
-                    targetRX = (e.beta - 45) * 0.6;
-                    targetRY = e.gamma * 0.6;
+                    // Multiplicador aumentado (0.6 -> 1.0) para que responda más rápido
+                    targetRX = (e.beta - 45) * 1.0;
+                    targetRY = e.gamma * 1.0;
 
                     // Limitar rotación máxima
-                    targetRX = Math.max(-25, Math.min(25, targetRX));
-                    targetRY = Math.max(-25, Math.min(25, targetRY));
+                    targetRX = Math.max(-35, Math.min(35, targetRX));
+                    targetRY = Math.max(-35, Math.min(35, targetRY));
                 }
             });
 
