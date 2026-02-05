@@ -249,12 +249,12 @@ function init3DCard() {
     // Initialize ztext
     try {
         card3dZtext = new Ztextify('#z-text-container', {
-            depth: "6px",
-            layers: 8,
+            depth: "10px",
+            layers: 10,
             fade: true,
-            direction: "both",
+            direction: "backwards",
             event: "none",
-            perspective: "500px"
+            perspective: "800px"
         });
     } catch (e) {
         console.error("Ztext init error:", e);
