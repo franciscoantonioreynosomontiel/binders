@@ -62,8 +62,8 @@ body {
 
 /* ===== Tamaños responsivos del álbum (Configuración del Test) ===== */
 .album {    
-    width: 922px;
-    height: 700px;
+    width: 600px;
+    height: 420px;
     box-shadow: 0 30px 60px rgba(0,0,0,0.8);  
     user-select: none;  
     position: relative;
