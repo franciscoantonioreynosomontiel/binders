@@ -56,6 +56,7 @@ $(document).ready(async function() {
     $(document).on("click", "#close-btn, #image-overlay", function(e) {
         if (e.target === this || $(this).attr('id') === 'close-btn') {
             $("#image-overlay").removeClass("active");
+            $("body").removeClass("modal-open");
 
             // Clean up 3D effects
             card3dActive = false;
@@ -203,6 +204,7 @@ let currentRX = 0;
 let currentRY = 0;
 let card3dActive = false;
 let card3dOrientationHandler = null;
+let card3dTouchHandler = null;
 
 function updateRotation() {
     if (!card3dActive) return;
@@ -258,7 +260,10 @@ function init3DCard() {
         console.error("Ztext init error:", e);
     }
 
-    $container.off('mousemove mouseleave touchmove touchend');
+    $container.off('mousemove mouseleave touchend');
+    if (card3dTouchHandler) {
+        $container[0].removeEventListener('touchmove', card3dTouchHandler);
+    }
 
     $container.on('mousemove', (e) => {
         const rect = $container[0].getBoundingClientRect();
@@ -274,8 +279,8 @@ function init3DCard() {
         targetRY = 0;
     });
 
-    // Touch support
-    $container.on('touchmove', (e) => {
+    // Touch support - use native listener with {passive: false} to allow e.preventDefault()
+    card3dTouchHandler = (e) => {
         const rect = $container[0].getBoundingClientRect();
         const touch = e.touches[0];
         const x = touch.clientX - rect.left;
@@ -283,8 +288,11 @@ function init3DCard() {
 
         targetRY = ((x / rect.width) - 0.5) * 40;
         targetRX = ((y / rect.height) - 0.5) * -40;
-        e.preventDefault();
-    }, { passive: false });
+
+        if (e.cancelable) e.preventDefault();
+    };
+
+    $container[0].addEventListener('touchmove', card3dTouchHandler, { passive: false });
 
     $container.on('touchend', () => {
         targetRX = 0;
@@ -347,6 +355,7 @@ function openCardModal($slot) {
     $("#card-price").text(price);
 
     $("#image-overlay").addClass("active");
+    $("body").addClass("modal-open");
 
     // Defer initialization to allow DOM update
     setTimeout(() => {
