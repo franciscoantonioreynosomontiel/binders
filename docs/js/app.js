@@ -636,9 +636,10 @@ async function renderAlbum(album) {
         if (turnInitialized) return;
         turnInitialized = true;
 
-        const isMobile = window.innerWidth <= 992;
+        // Usar dimensiones del DOM calculadas por CSS
         const width = $albumDiv.width();
-        const height = isMobile ? Math.floor(width * (420 / 600)) : 420;
+        const height = $albumDiv.height();
+        const isMobile = window.innerWidth <= 992;
 
         $albumDiv.turn({
             width: width,
@@ -649,9 +650,11 @@ async function renderAlbum(album) {
             display: 'double',
             elevation: 50,
             duration: 1000,
+            // Ajustar cornerSize basado en el tamaño del álbum
             cornerSize: isMobile ? 100 : 50,
             when: {
                 start: function(event, pageObject, corner) {
+                    // Solo permitir el giro si es desde una esquina o disparado manualmente por búsqueda
                     if (!corner && !isManualPageTurn) {
                         event.preventDefault();
                     }

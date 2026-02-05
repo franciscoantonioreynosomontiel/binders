@@ -74,6 +74,8 @@ body {
     transform: translate3d(0,0,0);
 }
 
+
+
 /* Ensure internal turn.js pages are properly positioned */
 .album .turn-page {
     position: absolute !important;
@@ -91,6 +93,7 @@ body {
     -webkit-backface-visibility: hidden;
     transform: translate3d(0,0,0);
 }
+
 
 .cover-page {
     padding: 0;
@@ -198,7 +201,7 @@ body {
         font-size: 40px; /* Bigger tap target */
         color: #fff;
     }
-} 
+}
 
 #close-btn:hover {
     color: #fff;
@@ -215,15 +218,15 @@ body {
     font-weight: 700;
     margin-bottom: 5px;
     letter-spacing: -0.5px;
-}  
+}
 
 .info-grid {
     margin-top: 25px;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
-    width: 100%;  
-}  
+    width: 100%;
+}
 
 .info-item {
     background: rgba(255, 255, 255, 0.03);
@@ -381,7 +384,7 @@ body {
     padding: 10px 20px;
     border-radius: 8px;
     display: flex;
-    align-items: center; 
+    align-items: center;
     gap: 8px;
 }
 
@@ -717,7 +720,7 @@ input:checked + .slider:before {
     font-size: 2.5rem;
     margin: 10px 0;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-} 
+}
 
 .public-header p {
     font-size: 1.1rem;
@@ -834,7 +837,7 @@ input:checked + .slider:before {
 
 #clear-search:hover {
     color: white;
-} 
+}
 
 .view-section {
     display: none;
@@ -929,7 +932,7 @@ input:checked + .slider:before {
     }
 }
 
-@media (max-width: 992px) {
+@media (max-width: 640px) {
     .main-container {
         padding: 20px 10px;
     }
@@ -947,12 +950,10 @@ input:checked + .slider:before {
     }
 
     .album {
-        width: 92% !important;
-        max-width: 500px;
+        width: 90vw;
+        height: 63vw;
         margin: 0 auto !important;
         box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-        height: auto !important;
-        aspect-ratio: 600 / 420;
     }
 
     .public-album-item {
