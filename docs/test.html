@@ -3,69 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TCG Rarezas Test - TCG Dual</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>Test Hologramas 3D - TCG Dual</title>
     <link rel="stylesheet" href="css/test.css">
     <style>
-        /* Ajuste para z-text */
-        .z-layer {
-            border-radius: 15px;
+        /* Ajustes finales integrados */
+        .rainbow .holo-layer {
+            background-image: linear-gradient(
+                var(--angle, 135deg),
+                rgba(255, 182, 193, 0.4),
+                rgba(255, 218, 185, 0.4),
+                rgba(255, 250, 205, 0.4),
+                rgba(152, 251, 152, 0.4),
+                rgba(175, 238, 238, 0.4),
+                rgba(221, 160, 221, 0.4)
+            );
+            background-size: 300% 300%;
+            background-position: calc(var(--mx, 0.5) * 100%) calc(var(--my, 0.5) * 100%);
+            mix-blend-mode: overlay;
+        }
+        .foil .holo-layer {
+            background:
+                linear-gradient(
+                    var(--angle, 135deg),
+                    rgba(255,0,0,0.15), rgba(255,255,0,0.15), rgba(0,255,0,0.15),
+                    rgba(0,255,255,0.15), rgba(0,0,255,0.15), rgba(255,0,255,0.15), rgba(255,0,0,0.15)
+                ),
+                linear-gradient(
+                    135deg,
+                    rgba(255,255,255,0) 0%,
+                    rgba(255,255,255,0.3) 50%,
+                    rgba(255,255,255,0) 100%
+                );
+            background-size: 400% 400%, 200% 200%;
+            background-position: calc(var(--mx, 0.5) * 100%) calc(var(--my, 0.5) * 100%), calc(var(--mx, 0.5) * 100%) calc(var(--my, 0.5) * 100%);
+            mix-blend-mode: color-dodge;
+            opacity: 0.6;
+        }
+        .ghost-rare img {
+            filter: grayscale(1) brightness(1.2) contrast(0.8) !important;
         }
     </style>
 </head>
-<body class="public-body">
-
-    <h1 style="color: white; text-align: center; margin-top: 30px; font-family: sans-serif;">Simulación de Rarezas TCG</h1>
-
+<body>
     <div class="test-container">
 
         <!-- SUPER RARE -->
         <div class="card-item">
             <div class="card-wrapper super-rare">
-                <div class="card-3d z-text">
-                    <img class="card-image" src="https://images.pokemontcg.io/swsh1/79_hires.png" alt="Mewtwo V">
+                <div class="card-3d">
+                    <img src="https://images.pokemontcg.io/swsh4/25_hierarchy.png" class="card-image" data-z data-z-layers="15" data-z-depth="15px">
                     <div class="holo-layer"></div>
                 </div>
             </div>
-            <div class="card-label">Super Rare (Foil Fondo)</div>
+            <div class="card-label">Super Rare</div>
         </div>
 
         <!-- FOIL -->
         <div class="card-item">
             <div class="card-wrapper foil">
-                <div class="card-3d z-text">
-                    <img class="card-image" src="https://images.pokemontcg.io/swsh4/188_hires.png" alt="Pikachu VMAX">
+                <div class="card-3d">
+                    <img src="https://images.pokemontcg.io/swsh1/1_hierarchy.png" class="card-image" data-z data-z-layers="15" data-z-depth="15px">
                     <div class="holo-layer"></div>
                 </div>
             </div>
-            <div class="card-label">Foil (Brillo Holograma)</div>
+            <div class="card-label">Foil</div>
+        </div>
+
+        <!-- RAINBOW -->
+        <div class="card-item">
+            <div class="card-wrapper rainbow">
+                <div class="card-3d">
+                    <img src="https://images.pokemontcg.io/sm12/236_hierarchy.png" class="card-image" data-z data-z-layers="15" data-z-depth="15px">
+                    <div class="holo-layer"></div>
+                </div>
+            </div>
+            <div class="card-label">Rainbow</div>
         </div>
 
         <!-- GHOST RARE -->
         <div class="card-item">
             <div class="card-wrapper ghost-rare">
-                <div class="card-3d z-text">
-                    <img class="card-image" src="https://images.pokemontcg.io/neo1/9_hires.png" alt="Lugia">
+                <div class="card-3d">
+                    <img src="https://images.pokemontcg.io/base1/4_hierarchy.png" class="card-image" data-z data-z-layers="15" data-z-depth="15px">
                     <div class="holo-layer"></div>
                 </div>
             </div>
-            <div class="card-label">Ghost Rare (Efecto Blanco)</div>
-        </div>
-
-        <!-- SECRET RARE -->
-        <div class="card-item">
-            <div class="card-wrapper secret-rare">
-                <div class="card-3d z-text">
-                    <img class="card-image" src="https://images.pokemontcg.io/swsh4/185_hires.png" alt="Pikachu VMAX Secret">
-                    <div class="holo-layer"></div>
-                </div>
-            </div>
-            <div class="card-label">Secret Rare (Glitter / Textura)</div>
+            <div class="card-label">Ghost Rare</div>
         </div>
 
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="js/ztext.js"></script>
     <script src="js/test.js"></script>
 </body>

@@ -1020,3 +1020,117 @@ input:checked + .slider:before {
         justify-content: center;
     }
 }
+
+/* --- HOLOGRAPHIC EFFECTS --- */
+
+.card-3d-container {
+    perspective: 1000px;
+    width: 220px;
+    height: 308px;
+    margin-bottom: 25px;
+    position: relative;
+    touch-action: none;
+    z-index: 5;
+}
+
+.card-3d {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.1s ease;
+    border-radius: 12px;
+}
+
+#expanded-image {
+    width: 100%;
+    height: 100%;
+    margin-bottom: 0 !important;
+    backface-visibility: hidden;
+    display: block;
+    border: 1px solid #444;
+    border-radius: 12px;
+}
+
+.holo-layer {
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    pointer-events: none;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.card-3d-container.active .holo-layer {
+    opacity: 1;
+}
+
+/* SUPER RARE */
+.super-rare .holo-layer {
+    background-image: linear-gradient(
+        var(--angle, 135deg),
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.2) 20%,
+        rgba(255, 255, 255, 0.8) 50%,
+        rgba(255, 255, 255, 0.2) 80%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    background-size: 200% 200%;
+    background-position: calc(var(--mx, 0.5) * 100%) calc(var(--my, 0.5) * 100%);
+    mix-blend-mode: color-dodge;
+    -webkit-mask-image: radial-gradient(ellipse at 50% 45%, transparent 30%, black 60%);
+    mask-image: radial-gradient(ellipse at 50% 45%, transparent 30%, black 60%);
+}
+
+/* GHOST RARE */
+.ghost-rare img {
+    filter: grayscale(1) brightness(1.2) contrast(0.8) !important;
+}
+.ghost-rare .holo-layer {
+    background: linear-gradient(
+        var(--angle, 135deg),
+        rgba(255,0,0,0.3), rgba(255,255,0,0.3), rgba(0,255,0,0.3),
+        rgba(0,255,255,0.3), rgba(0,0,255,0.3), rgba(255,0,255,0.3), rgba(255,0,0,0.3)
+    );
+    background-size: 400% 400%;
+    background-position: calc(var(--mx, 0.5) * 100%) calc(var(--my, 0.5) * 100%);
+    mix-blend-mode: color-dodge;
+    opacity: 0.5;
+}
+
+/* FOIL */
+.foil .holo-layer {
+    background:
+        linear-gradient(
+            var(--angle, 135deg),
+            rgba(255,0,0,0.15), rgba(255,255,0,0.15), rgba(0,255,0,0.15),
+            rgba(0,255,255,0.15), rgba(0,0,255,0.15), rgba(255,0,255,0.15), rgba(255,0,0,0.15)
+        ),
+        linear-gradient(
+            135deg,
+            rgba(255,255,255,0) 0%,
+            rgba(255,255,255,0.3) 50%,
+            rgba(255,255,255,0) 100%
+        );
+    background-size: 400% 400%, 200% 200%;
+    background-position: calc(var(--mx, 0.5) * 100%) calc(var(--my, 0.5) * 100%), calc(var(--mx, 0.5) * 100%) calc(var(--my, 0.5) * 100%);
+    mix-blend-mode: color-dodge;
+    opacity: 0.6;
+}
+
+/* RAINBOW */
+.rainbow .holo-layer {
+    background-image: linear-gradient(
+        var(--angle, 135deg),
+        rgba(255, 182, 193, 0.4),
+        rgba(255, 218, 185, 0.4),
+        rgba(255, 250, 205, 0.4),
+        rgba(152, 251, 152, 0.4),
+        rgba(175, 238, 238, 0.4),
+        rgba(221, 160, 221, 0.4)
+    );
+    background-size: 300% 300%;
+    background-position: calc(var(--mx, 0.5) * 100%) calc(var(--my, 0.5) * 100%);
+    mix-blend-mode: overlay;
+}
