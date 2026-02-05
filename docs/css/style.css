@@ -74,21 +74,7 @@ body {
     transform: translate3d(0,0,0);
 }
 
-@media (min-width: 2560px) {
-    .album-wrapper, .album { width: 1400px; height: 1050px; }
-}
-@media (min-width: 1921px) and (max-width: 2559px) {
-    .album-wrapper, .album { width: 1200px; height: 900px; }
-}
-@media (min-width: 1367px) and (max-width: 1919px) {
-    .album-wrapper, .album { width: 1000px; height: 760px; }
-}
-@media (min-width: 993px) and (max-width: 1366px) {
-    .album-wrapper, .album { width: 690px; height: 520px; }
-}
-@media (max-width: 992px) {
-    .album-wrapper, .album { width: 100%; height: 400px; }
-}
+
 
 /* Ensure internal turn.js pages are properly positioned */
 .album .turn-page {
@@ -99,8 +85,8 @@ body {
     background: #1a1a1a;    
     padding: 12px;
     border: 1px solid #333;    
-    width: 461px;
-    height: 700px;
+    width: 300px;
+    height: 420px;
     box-shadow: inset 0 0 50px rgba(0,0,0,0.5); 
     overflow: hidden;
     backface-visibility: hidden;
@@ -108,12 +94,6 @@ body {
     transform: translate3d(0,0,0);
 }  
 
-/* Ajustar el ancho de la página según el álbum */
-@media (min-width: 2560px) { .page { width: 700px; height: 1050px; } }
-@media (min-width: 1921px) and (max-width: 2559px) { .page { width: 600px; height: 900px; } }
-@media (min-width: 1367px) and (max-width: 1919px) { .page { width: 500px; height: 760px; } }
-@media (min-width: 993px) and (max-width: 1366px) { .page { width: 345px; height: 520px; } }
-@media (max-width: 992px) { .page { width: 50%; height: 400px; padding: 4px; } }
 
 .cover-page {  
     padding: 0;  
