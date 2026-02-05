@@ -3,238 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Efecto 3D y Holograma - TCG Dual</title>
+    <title>TCG Rarezas Test - TCG Dual</title>
     <link rel="stylesheet" href="css/style.css">
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background-color: #0f0f0f;
-        }
-
-        /* Aseguramos que el overlay esté siempre visible para el test */
-        #image-overlay {
-            display: flex !important;
-            opacity: 1 !important;
-            visibility: visible !important;
-        }
-
-        .overlay-content {
-            overflow: visible !important; /* Para que se vea el efecto 3D */
-            background: #111;
-            padding: 40px;
-            border-radius: 24px;
-            border: 1px solid #333;
-            box-shadow: 0 0 100px rgba(0,168,255,0.1);
-        }
-
-        #expanded-image-wrapper {
-            position: relative;
-            width: 280px;
-            height: 392px;
-            margin-bottom: 25px;
-            perspective: 1000px;
-            touch-action: none; /* Prevenir scroll en móviles al interactuar */
-        }
-
-        #expanded-image-wrapper img {
-            width: 100%;
-            height: 100%;
-            border-radius: 15px;
-            object-fit: cover;
-            display: block;
-        }
-
-        /* Capa Holográfica Mejorada */
-        .holo-effect {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border-radius: 15px;
-            z-index: 10;
-            pointer-events: none;
-            mix-blend-mode: color-dodge; /* Mejor para efectos de brillo */
-            opacity: 0.6;
-            background-image:
-                linear-gradient(
-                    135deg,
-                    rgba(255, 255, 255, 0) 0%,
-                    rgba(255, 255, 255, 0.1) 25%,
-                    rgba(255, 255, 255, 0.6) 50%,
-                    rgba(255, 255, 255, 0.1) 75%,
-                    rgba(255, 255, 255, 0) 100%
-                ),
-                linear-gradient(
-                    110deg,
-                    transparent 0%,
-                    rgba(255, 0, 0, 0.05) 15%,
-                    rgba(255, 255, 0, 0.05) 30%,
-                    rgba(0, 255, 0, 0.05) 45%,
-                    rgba(0, 255, 255, 0.05) 60%,
-                    rgba(0, 0, 255, 0.05) 75%,
-                    rgba(255, 0, 255, 0.05) 90%,
-                    transparent 100%
-                );
-            background-size: 200% 200%, 300% 300%;
-            background-position: var(--hx, 50%) var(--hy, 50%), var(--rx-pos, 50%) var(--ry-pos, 50%);
-            transition: opacity 0.3s;
-        }
-
-        /* Estilos adicionales para ztext layers */
-        .z-layer:not(:first-child) {
-            filter: brightness(0.6) contrast(1.2);
-        }
-
-        .card-info {
-            width: 100%;
-            text-align: center;
-        }
-
-        .card-name {
-            color: #fff;
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-    </style>
+    <link rel="stylesheet" href="css/test.css">
 </head>
 <body class="public-body">
-    <div id="image-overlay" class="overlay active">
-        <div class="overlay-content">
-            <div id="expanded-image-wrapper">
-                <img id="test-card-img" src="https://images.pokemontcg.io/base1/4_hires.png" alt="Charizard">
-                <div class="holo-effect"></div>
-            </div>
 
-            <div class="card-info">
-                <div class="card-name">Charizard (Base Set)</div>
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-label">Rareza</div>
-                        <div class="info-value">Rare Holo</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Expansión</div>
-                        <div class="info-value">Base Set</div>
-                    </div>
-                    <div class="info-item price-item">
-                        <div class="info-label">Precio Estimado</div>
-                        <div class="info-value">$400.00</div>
-                    </div>
+    <h1 style="color: white; text-align: center; margin-top: 30px; font-family: sans-serif;">Simulación de Rarezas TCG</h1>
+
+    <div class="test-container">
+
+        <!-- SUPER RARE -->
+        <div class="card-item">
+            <div class="card-wrapper super-rare">
+                <div class="card-3d">
+                    <img class="card-image" src="https://images.pokemontcg.io/swsh1/79_hires.png" alt="Mewtwo V">
+                    <div class="holo-layer"></div>
                 </div>
             </div>
+            <div class="card-label">Super Rare (Foil Fondo)</div>
         </div>
+
+        <!-- SECRET RARE -->
+        <div class="card-item">
+            <div class="card-wrapper secret-rare">
+                <div class="card-3d">
+                    <img class="card-image" src="https://images.pokemontcg.io/swsh4/188_hires.png" alt="Pikachu VMAX">
+                    <div class="holo-layer"></div>
+                </div>
+            </div>
+            <div class="card-label">Secret Rare (Glitter Pattern)</div>
+        </div>
+
+        <!-- GHOST RARE -->
+        <div class="card-item">
+            <div class="card-wrapper ghost-rare">
+                <div class="card-3d">
+                    <img class="card-image" src="https://images.pokemontcg.io/neo1/9_hires.png" alt="Lugia">
+                    <div class="holo-layer"></div>
+                </div>
+            </div>
+            <div class="card-label">Ghost Rare (Color Reveal)</div>
+        </div>
+
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/bennettfeely/ztext/js/ztext.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            // Inicializar ztext
-            Ztextify("#expanded-image-wrapper", {
-                depth: "10px",
-                layers: 10,
-                event: "none"
-            });
-
-            let targetRX = 0;
-            let targetRY = 0;
-            let currentRX = 0;
-            let currentRY = 0;
-
-            // Cache de elementos DOM para optimizar el loop
-            let zText = null;
-            let wrapper = document.querySelector('#expanded-image-wrapper');
-
-            // Loop de animación (LERP) para movimiento suave
-            function update() {
-                // Intentar obtener el elemento ztext si aún no está en cache
-                if (!zText) zText = document.querySelector(".z-text");
-
-                // Suavizado del movimiento (Factor 0.1 para que sea un poco más rápido pero fluido)
-                currentRX += (targetRX - currentRX) * 0.1;
-                currentRY += (targetRY - currentRY) * 0.1;
-
-                // Aplicar rotación al elemento generado por ztext
-                if (zText) {
-                    zText.style.transform = `rotateX(${currentRX}deg) rotateY(${currentRY}deg)`;
-                }
-
-                // Actualizar posición del brillo holográfico basado en la rotación
-                // hx y hy para el brillo blanco
-                const hx = 50 + (currentRY * 2.5);
-                const hy = 50 + (currentRX * 2.5);
-
-                // rx-pos y ry-pos para el efecto arcoiris (movimiento diferente)
-                const rxPos = 50 - (currentRY * 3);
-                const ryPos = 50 - (currentRX * 3);
-
-                if (wrapper) {
-                    wrapper.style.setProperty('--hx', `${hx}%`);
-                    wrapper.style.setProperty('--hy', `${hy}%`);
-                    wrapper.style.setProperty('--rx-pos', `${rxPos}%`);
-                    wrapper.style.setProperty('--ry-pos', `${ryPos}%`);
-                }
-
-                requestAnimationFrame(update);
-            }
-
-            // Iniciar el loop
-            update();
-
-            // Interacción con Mouse
-            window.addEventListener("mousemove", (e) => {
-                // Mapear posición del mouse a grados de rotación (máx +/- 30deg)
-                targetRY = (e.clientX / window.innerWidth - 0.5) * 60;
-                targetRX = (e.clientY / window.innerHeight - 0.5) * -60;
-            });
-
-            // Interacción con Touch (Dedo)
-            window.addEventListener("touchmove", (e) => {
-                if (e.touches.length > 0) {
-                    const touch = e.touches[0];
-                    // Multiplicador aumentado para mayor velocidad
-                    targetRY = (touch.clientX / window.innerWidth - 0.5) * 70;
-                    targetRX = (touch.clientY / window.innerHeight - 0.5) * -70;
-                }
-            }, { passive: false }); // Cambiado a passive: false para permitir preventDefault si fuera necesario, aunque usamos touch-action: none
-
-            // Interacción con Giroscopio (Celular)
-            window.addEventListener("deviceorientation", (e) => {
-                if (e.beta !== null && e.gamma !== null) {
-                    // Multiplicador aumentado (0.6 -> 1.0) para que responda más rápido
-                    targetRX = (e.beta - 45) * 1.0;
-                    targetRY = e.gamma * 1.0;
-
-                    // Limitar rotación máxima
-                    targetRX = Math.max(-35, Math.min(35, targetRX));
-                    targetRY = Math.max(-35, Math.min(35, targetRY));
-                }
-            });
-
-            // Solicitar permiso de giroscopio en iOS
-            function requestGyroPermission() {
-                if (typeof DeviceOrientationEvent !== 'undefined' &&
-                    typeof DeviceOrientationEvent.requestPermission === 'function') {
-                    DeviceOrientationEvent.requestPermission()
-                        .then(response => {
-                            if (response == 'granted') {
-                                console.log("Giroscopio activado");
-                            }
-                        })
-                        .catch(console.error);
-                }
-            }
-
-            // Activar al primer click del usuario (requerido por navegadores modernos)
-            window.addEventListener('click', requestGyroPermission, { once: true });
-        });
-    </script>
+    <script src="js/test.js"></script>
 </body>
 </html>
