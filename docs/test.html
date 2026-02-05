@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Efecto 3D y Holograma - TCG Dual</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #0f0f0f;
+        }
+
+        /* Aseguramos que el overlay esté siempre visible para el test */
+        #image-overlay {
+            display: flex !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+
+        .overlay-content {
+            overflow: visible !important; /* Para que se vea el efecto 3D */
+            background: #111;
+            padding: 40px;
+            border-radius: 24px;
+            border: 1px solid #333;
+            box-shadow: 0 0 100px rgba(0,168,255,0.1);
+        }
+
+        #expanded-image-wrapper {
+            position: relative;
+            width: 280px;
+            height: 392px;
+            margin-bottom: 25px;
+            perspective: 1000px;
+        }
+
+        #expanded-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            border-radius: 15px;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Capa Holográfica */
+        .holo-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 15px;
+            z-index: 10;
+            pointer-events: none;
+            mix-blend-mode: overlay;
+            opacity: 0.8;
+            background-image: linear-gradient(
+                135deg,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.1) 25%,
+                rgba(255, 255, 255, 0.4) 50%,
+                rgba(255, 255, 255, 0.1) 75%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            background-size: 200% 200%;
+            background-position: var(--hx, 50%) var(--hy, 50%);
+            transition: opacity 0.3s;
+        }
+
+        /* Estilos adicionales para ztext layers */
+        .z-layer:not(:first-child) {
+            filter: brightness(0.6) contrast(1.2);
+        }
+
+        .card-info {
+            width: 100%;
+            text-align: center;
+        }
+
+        .card-name {
+            color: #fff;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body class="public-body">
+    <div id="image-overlay" class="overlay active">
+        <div class="overlay-content">
+            <div id="expanded-image-wrapper">
+                <img id="test-card-img" src="https://images.pokemontcg.io/base1/4_hires.png" alt="Charizard">
+                <div class="holo-effect"></div>
+            </div>
+
+            <div class="card-info">
+                <div class="card-name">Charizard (Base Set)</div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Rareza</div>
+                        <div class="info-value">Rare Holo</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Expansión</div>
+                        <div class="info-value">Base Set</div>
+                    </div>
+                    <div class="info-item price-item">
+                        <div class="info-label">Precio Estimado</div>
+                        <div class="info-value">$400.00</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/bennettfeely/ztext/js/ztext.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Inicializar ztext
+            Ztextify("#expanded-image-wrapper", {
+                depth: "10px",
+                layers: 10,
+                event: "none"
+            });
+
+            let targetRX = 0;
+            let targetRY = 0;
+            let currentRX = 0;
+            let currentRY = 0;
+
+            // Cache de elementos DOM para optimizar el loop
+            let zText = null;
+            let wrapper = document.querySelector('#expanded-image-wrapper');
+
+            // Loop de animación (LERP) para movimiento suave
+            function update() {
+                // Intentar obtener el elemento ztext si aún no está en cache
+                if (!zText) zText = document.querySelector(".z-text");
+
+                // Suavizado del movimiento (Factor 0.05 para que sea lento y agradable)
+                currentRX += (targetRX - currentRX) * 0.05;
+                currentRY += (targetRY - currentRY) * 0.05;
+
+                // Aplicar rotación al elemento generado por ztext
+                if (zText) {
+                    zText.style.transform = `rotateX(${currentRX}deg) rotateY(${currentRY}deg)`;
+                }
+
+                // Actualizar posición del brillo holográfico basado en la rotación
+                const hx = 50 + (currentRY * 2);
+                const hy = 50 + (currentRX * 2);
+
+                if (wrapper) {
+                    wrapper.style.setProperty('--hx', `${hx}%`);
+                    wrapper.style.setProperty('--hy', `${hy}%`);
+                }
+
+                requestAnimationFrame(update);
+            }
+
+            // Iniciar el loop
+            update();
+
+            // Interacción con Mouse
+            window.addEventListener("mousemove", (e) => {
+                // Mapear posición del mouse a grados de rotación (máx +/- 20deg)
+                targetRY = (e.clientX / window.innerWidth - 0.5) * 40;
+                targetRX = (e.clientY / window.innerHeight - 0.5) * -40;
+            });
+
+            // Interacción con Touch (Dedo)
+            window.addEventListener("touchmove", (e) => {
+                if (e.touches.length > 0) {
+                    const touch = e.touches[0];
+                    targetRY = (touch.clientX / window.innerWidth - 0.5) * 40;
+                    targetRX = (touch.clientY / window.innerHeight - 0.5) * -40;
+                }
+            }, { passive: true });
+
+            // Interacción con Giroscopio (Celular)
+            window.addEventListener("deviceorientation", (e) => {
+                if (e.beta !== null && e.gamma !== null) {
+                    // beta (inclinación adelante/atrás): aprox 45 grados es posición normal de lectura
+                    // gamma (inclinación izquierda/derecha)
+                    targetRX = (e.beta - 45) * 0.6;
+                    targetRY = e.gamma * 0.6;
+
+                    // Limitar rotación máxima
+                    targetRX = Math.max(-25, Math.min(25, targetRX));
+                    targetRY = Math.max(-25, Math.min(25, targetRY));
+                }
+            });
+
+            // Solicitar permiso de giroscopio en iOS
+            function requestGyroPermission() {
+                if (typeof DeviceOrientationEvent !== 'undefined' &&
+                    typeof DeviceOrientationEvent.requestPermission === 'function') {
+                    DeviceOrientationEvent.requestPermission()
+                        .then(response => {
+                            if (response == 'granted') {
+                                console.log("Giroscopio activado");
+                            }
+                        })
+                        .catch(console.error);
+                }
+            }
+
+            // Activar al primer click del usuario (requerido por navegadores modernos)
+            window.addEventListener('click', requestGyroPermission, { once: true });
+        });
+    </script>
+</body>
+</html>
