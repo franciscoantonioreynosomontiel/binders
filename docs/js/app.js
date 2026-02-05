@@ -601,9 +601,14 @@ async function renderAlbum(album) {
     $albumDiv.on("touchmove mousemove", function(e) {
         if (albumStartX === undefined || albumStartY === undefined) return;
         const ev = e.type.startsWith('touch') ? (e.originalEvent.touches ? e.originalEvent.touches[0] : e) : e;
-        if (Math.abs(ev.pageX - albumStartX) > 10 || Math.abs(ev.pageY - albumStartY) > 10) {
+        if (Math.abs(ev.pageX - albumStartX) > 5 || Math.abs(ev.pageY - albumStartY) > 5) {
             isAlbumMoving = true;
         }
+    });
+
+    $albumDiv.on("touchend mouseup", function() {
+        // Pequeño delay para asegurar que Turn.js procese los eventos con el estado correcto
+        setTimeout(() => { isAlbumMoving = false; }, 150);
     });
 
     const { data: pages } = await _supabase
@@ -685,19 +690,18 @@ async function renderAlbum(album) {
             cornerSize: isMobile ? 100 : 50,
             when: {
                 start: function(event, pageObject, corner) {
-                    // Solo permitir el giro si es desde una esquina o disparado manualmente por búsqueda
+                    // Solo permitir el inicio si es desde una esquina o disparado manualmente
                     if (!corner && !isManualPageTurn) {
                         event.preventDefault();
                     }
                 },
-                released: function(event) {
-                    const isMobileDevice = window.innerWidth <= 640;
-                    // En móvil, si no ha habido arrastre, prevenir el flip automático por click
+                turning: function(event, page, view) {
+                    const isMobileDevice = window.innerWidth <= 1024;
+                    // En móvil/tablet, bloquear el giro automático si no es un arrastre real
                     if (isMobileDevice && !isManualPageTurn && !isAlbumMoving) {
-                        event.stopImmediatePropagation();
                         event.preventDefault();
                     }
-                },
+                }
             }
         });
     };
