@@ -636,10 +636,17 @@ async function renderAlbum(album) {
         if (turnInitialized) return;
         turnInitialized = true;
 
-        // Usar dimensiones del DOM calculadas por CSS
-        const width = $albumDiv.width();
-        const height = $albumDiv.height();
-        const isMobile = window.innerWidth <= 992;
+        // Calcular dimensiones basadas en el contenedor para evitar estiramiento en móvil
+        const containerWidth = $albumContainer.find('.album-wrapper').width();
+        const isMobile = window.innerWidth <= 640;
+
+        let width = 600;
+        let height = 420;
+
+        if (isMobile || containerWidth < 600) {
+            width = containerWidth;
+            height = Math.floor(width * (420 / 600));
+        }
 
         $albumDiv.turn({
             width: width,
