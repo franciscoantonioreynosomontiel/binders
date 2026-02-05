@@ -56,6 +56,13 @@ $(document).ready(async function() {
     $(document).on("click", "#close-btn, #image-overlay", function(e) {
         if (e.target === this || $(this).attr('id') === 'close-btn') {
             $("#image-overlay").removeClass("active");
+
+            // Clean up 3D effects
+            card3dActive = false;
+            if (card3dOrientationHandler) {
+                window.removeEventListener('deviceorientation', card3dOrientationHandler);
+                card3dOrientationHandler = null;
+            }
         }
     });
 
@@ -189,6 +196,114 @@ function resetFilter() {
     $('#no-results').hide();
 }
 
+let card3dZtext = null;
+let targetRX = 0;
+let targetRY = 0;
+let currentRX = 0;
+let currentRY = 0;
+let card3dActive = false;
+let card3dOrientationHandler = null;
+
+function init3DCard() {
+    const $container = $('#card-3d-container');
+    const $card = $('#card-3d');
+
+    if (card3dZtext) {
+        card3dZtext.destroy();
+    }
+
+    // Reset styles
+    $card.css('transform', '');
+    currentRX = 0;
+    currentRY = 0;
+    targetRX = 0;
+    targetRY = 0;
+
+    // Initialize ztext
+    card3dZtext = new Ztextify("#expanded-image", {
+        depth: "10px",
+        layers: 10,
+        fade: true,
+        direction: "both",
+        event: "none",
+        perspective: "500px"
+    });
+
+    const updateRotation = () => {
+        if (!card3dActive) return;
+
+        // LERP for smooth motion
+        currentRX += (targetRX - currentRX) * 0.1;
+        currentRY += (targetRY - currentRY) * 0.1;
+
+        $card.css('transform', `rotateX(${currentRX}deg) rotateY(${currentRY}deg)`);
+
+        // Update holo effects variables
+        const mx = (currentRY + 20) / 40;
+        const my = (currentRX + 20) / 40;
+        const angle = (Math.atan2(currentRX, currentRY) * 180 / Math.PI) + 135;
+
+        $card.css({
+            '--mx': mx,
+            '--my': my,
+            '--angle': `${angle}deg`
+        });
+
+        requestAnimationFrame(updateRotation);
+    };
+
+    $container.off('mousemove mouseleave touchmove touchend');
+
+    $container.on('mousemove', (e) => {
+        const rect = $container[0].getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        targetRY = ((x / rect.width) - 0.5) * 40;
+        targetRX = ((y / rect.height) - 0.5) * -40;
+    });
+
+    $container.on('mouseleave', () => {
+        targetRX = 0;
+        targetRY = 0;
+    });
+
+    // Touch support
+    $container.on('touchmove', (e) => {
+        const rect = $container[0].getBoundingClientRect();
+        const touch = e.touches[0];
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+
+        targetRY = ((x / rect.width) - 0.5) * 40;
+        targetRX = ((y / rect.height) - 0.5) * -40;
+        e.preventDefault();
+    });
+
+    $container.on('touchend', () => {
+        targetRX = 0;
+        targetRY = 0;
+    });
+
+    // Device Orientation support
+    if (window.DeviceOrientationEvent) {
+        if (card3dOrientationHandler) {
+            window.removeEventListener('deviceorientation', card3dOrientationHandler);
+        }
+        card3dOrientationHandler = (e) => {
+            if (!card3dActive) return;
+            if (e.gamma !== null && e.beta !== null) {
+                targetRY = Math.max(-20, Math.min(20, e.gamma)) * 1.5;
+                targetRX = Math.max(-20, Math.min(20, e.beta - 45)) * 1.5;
+            }
+        };
+        window.addEventListener('deviceorientation', card3dOrientationHandler);
+    }
+
+    card3dActive = true;
+    requestAnimationFrame(updateRotation);
+}
+
 function openCardModal($slot) {
     const imgSrc = $slot.find("img").attr("src");
 
@@ -196,10 +311,17 @@ function openCardModal($slot) {
 
     const name = $slot.data("name") || "Carta de Colección";
     const rarity = $slot.data("rarity") || "-";
+    const holo = $slot.data("holo") || "";
     const expansion = $slot.data("expansion") || "-";
     const condition = $slot.data("condition") || "-";
     const quantity = $slot.data("quantity") || "1";
     const price = $slot.data("price") || "-";
+
+    const $card3d = $("#card-3d-container");
+    $card3d.removeClass("super-rare ghost-rare foil rainbow active");
+    if (holo) {
+        $card3d.addClass(holo);
+    }
 
     $("#expanded-image").attr("src", imgSrc);
     $("#card-name").text(name);
@@ -210,6 +332,12 @@ function openCardModal($slot) {
     $("#card-price").text(price);
 
     $("#image-overlay").addClass("active");
+
+    // Defer initialization to allow DOM update
+    setTimeout(() => {
+        init3DCard();
+        $card3d.addClass("active");
+    }, 50);
 }
 
 async function switchView(view) {
@@ -367,6 +495,7 @@ async function loadPublicDecks() {
                                 <div class="swiper-slide card-slot"
                                      data-name="${card.name || ''}"
                                      data-rarity="${card.rarity || ''}"
+                                     data-holo="${card.holo_effect || ''}"
                                      data-expansion="${card.expansion || ''}"
                                      data-condition="${card.condition || ''}"
                                      data-quantity="${card.quantity || '1'}"
@@ -444,6 +573,7 @@ async function renderAlbum(album) {
                 $slot.attr({
                     'data-name': slotData.name || '',
                     'data-rarity': slotData.rarity || '',
+                    'data-holo': slotData.holo_effect || '',
                     'data-expansion': slotData.expansion || '',
                     'data-condition': slotData.condition || '',
                     'data-quantity': slotData.quantity || '',

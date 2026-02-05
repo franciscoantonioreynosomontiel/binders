@@ -60,7 +60,12 @@
     <div id="image-overlay" class="overlay">
         <div class="overlay-content">
             <span id="close-btn">&times;</span>
-            <img id="expanded-image" src="" alt="Carta Expandida">
+            <div id="card-3d-container" class="card-3d-container">
+                <div id="card-3d" class="card-3d">
+                    <img id="expanded-image" src="" alt="Carta Expandida" data-z data-z-layers="10" data-z-depth="10px">
+                    <div class="holo-layer"></div>
+                </div>
+            </div>
             <div class="card-info">
                 <div id="card-name" class="card-name">Nombre de la Carta</div>
                 <div class="info-grid">
@@ -92,6 +97,7 @@
     <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="js/supabase-config.js"></script>
+    <script src="js/ztext.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

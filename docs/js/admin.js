@@ -127,6 +127,7 @@ $(document).ready(function() {
         const cardData = {
             image_url: $('#slot-image-url').val(),
             name: $('#slot-name').val(),
+            holo_effect: $('#slot-holo-effect').val(),
             rarity: $('#slot-rarity').val(),
             expansion: $('#slot-expansion').val(),
             condition: $('#slot-condition').val(),
@@ -527,6 +528,7 @@ function editDeckCard(card) {
 
     $('#slot-image-url').val(card.image_url || '');
     $('#slot-name').val(card.name || '');
+    $('#slot-holo-effect').val(card.holo_effect || '');
     $('#slot-rarity').val(card.rarity || '');
     $('#slot-expansion').val(card.expansion || '');
     $('#slot-condition').val(card.condition || '');
@@ -743,6 +745,7 @@ async function loadSlotData(pageId, slotIndex) {
 
     $('#slot-image-url').val('');
     $('#slot-name').val('');
+    $('#slot-holo-effect').val('');
     $('#slot-rarity').val('');
     $('#slot-expansion').val('');
     $('#slot-condition').val('');
@@ -752,6 +755,7 @@ async function loadSlotData(pageId, slotIndex) {
     if (data) {
         $('#slot-image-url').val(data.image_url || '');
         $('#slot-name').val(data.name || '');
+        $('#slot-holo-effect').val(data.holo_effect || '');
         $('#slot-rarity').val(data.rarity || '');
         $('#slot-expansion').val(data.expansion || '');
         $('#slot-condition').val(data.condition || '');
