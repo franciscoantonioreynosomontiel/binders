@@ -3,6 +3,16 @@
 document.addEventListener("DOMContentLoaded", () => {
     const cards = document.querySelectorAll(".card-wrapper");
 
+    // Inicializar ztext.js
+    const z = new Ztextify(".z-text", {
+        depth: "10px",
+        layers: 10,
+        fade: true,
+        direction: "both",
+        event: "none", // Desactivamos el manejo de eventos interno para usar nuestro LERP
+        perspective: "500px"
+    });
+
     let targetMX = 0.5;
     let targetMY = 0.5;
     let targetRX = 0;
@@ -33,6 +43,12 @@ document.addEventListener("DOMContentLoaded", () => {
             card.style.setProperty("--abs-ry", Math.abs(currentRY).toFixed(2));
             card.style.setProperty("--angle", `${angle}deg`);
             card.style.setProperty("--sparkle-opacity", (Math.random() * 0.5 + 0.5).toFixed(2));
+
+            // Aplicar rotación a las capas de ztext
+            const zLayers = card.querySelector(".z-layers");
+            if (zLayers) {
+                zLayers.style.transform = `rotateX(${currentRX}deg) rotateY(${currentRY}deg)`;
+            }
         });
 
         requestAnimationFrame(update);
@@ -65,6 +81,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Añadir clase active para forzar opacidad en móviles
             cards.forEach(c => c.classList.add('active'));
+
+            // Evitar scroll mientras se interactúa con la carta
+            if (e.target.closest('.card-wrapper')) {
+                e.preventDefault();
+            }
         }
     }, { passive: false });
 

@@ -6,6 +6,12 @@
     <title>TCG Rarezas Test - TCG Dual</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/test.css">
+    <style>
+        /* Ajuste para z-text */
+        .z-layer {
+            border-radius: 15px;
+        }
+    </style>
 </head>
 <body class="public-body">
 
@@ -16,7 +22,7 @@
         <!-- SUPER RARE -->
         <div class="card-item">
             <div class="card-wrapper super-rare">
-                <div class="card-3d">
+                <div class="card-3d z-text">
                     <img class="card-image" src="https://images.pokemontcg.io/swsh1/79_hires.png" alt="Mewtwo V">
                     <div class="holo-layer"></div>
                 </div>
@@ -24,31 +30,43 @@
             <div class="card-label">Super Rare (Foil Fondo)</div>
         </div>
 
-        <!-- SECRET RARE -->
+        <!-- FOIL -->
         <div class="card-item">
-            <div class="card-wrapper secret-rare">
-                <div class="card-3d">
+            <div class="card-wrapper foil">
+                <div class="card-3d z-text">
                     <img class="card-image" src="https://images.pokemontcg.io/swsh4/188_hires.png" alt="Pikachu VMAX">
                     <div class="holo-layer"></div>
                 </div>
             </div>
-            <div class="card-label">Secret Rare (Glitter Pattern)</div>
+            <div class="card-label">Foil (Brillo Holograma)</div>
         </div>
 
         <!-- GHOST RARE -->
         <div class="card-item">
             <div class="card-wrapper ghost-rare">
-                <div class="card-3d">
+                <div class="card-3d z-text">
                     <img class="card-image" src="https://images.pokemontcg.io/neo1/9_hires.png" alt="Lugia">
                     <div class="holo-layer"></div>
                 </div>
             </div>
-            <div class="card-label">Ghost Rare (Color Reveal)</div>
+            <div class="card-label">Ghost Rare (Efecto Blanco)</div>
+        </div>
+
+        <!-- SECRET RARE -->
+        <div class="card-item">
+            <div class="card-wrapper secret-rare">
+                <div class="card-3d z-text">
+                    <img class="card-image" src="https://images.pokemontcg.io/swsh4/185_hires.png" alt="Pikachu VMAX Secret">
+                    <div class="holo-layer"></div>
+                </div>
+            </div>
+            <div class="card-label">Secret Rare (Glitter / Textura)</div>
         </div>
 
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="js/ztext.js"></script>
     <script src="js/test.js"></script>
 </body>
 </html>
