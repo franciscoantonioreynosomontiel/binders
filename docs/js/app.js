@@ -249,8 +249,8 @@ function init3DCard() {
     // Initialize ztext
     try {
         card3dZtext = new Ztextify('#z-text-container', {
-            depth: "15px",
-            layers: 15,
+            depth: "6px",
+            layers: 8,
             fade: true,
             direction: "both",
             event: "none",
@@ -311,7 +311,19 @@ function init3DCard() {
                 targetRX = Math.max(-20, Math.min(20, e.beta - 45)) * 1.5;
             }
         };
-        window.addEventListener('deviceorientation', card3dOrientationHandler);
+
+        // iOS 13+ requires permission
+        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+            DeviceOrientationEvent.requestPermission()
+                .then(state => {
+                    if (state === 'granted') {
+                        window.addEventListener('deviceorientation', card3dOrientationHandler);
+                    }
+                })
+                .catch(err => console.error("Gyroscope permission denied:", err));
+        } else {
+            window.addEventListener('deviceorientation', card3dOrientationHandler);
+        }
     }
 
     if (!card3dActive) {
@@ -342,7 +354,7 @@ function openCardModal($slot) {
     `);
 
     const $card3d = $("#card-3d-container");
-    $card3d.removeClass("super-rare ghost-rare foil rainbow active");
+    $card3d.removeClass("super-rare secret-rare ghost-rare foil rainbow active");
     if (holo) {
         $card3d.addClass(holo);
     }

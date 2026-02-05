@@ -3,105 +3,174 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Hologramas 3D - TCG Dual</title>
-    <link rel="stylesheet" href="css/test.css">
+    <title>Test Efecto 3D y Holograma - TCG Dual</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Ztext library -->
+    <script src="js/ztext.js"></script>
     <style>
-        /* Ajustes finales integrados */
-        .rainbow .holo-layer {
-            background-image: linear-gradient(
-                var(--angle, 135deg),
-                rgba(255, 182, 193, 0.4),
-                rgba(255, 218, 185, 0.4),
-                rgba(255, 250, 205, 0.4),
-                rgba(152, 251, 152, 0.4),
-                rgba(175, 238, 238, 0.4),
-                rgba(221, 160, 221, 0.4)
-            );
-            background-size: 300% 300%;
-            background-position: calc(var(--mx, 0.5) * 100%) calc(var(--my, 0.5) * 100%);
-            mix-blend-mode: overlay;
+        body {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding: 40px;
+            min-height: 100vh;
+            background: #0f0f0f;
+            color: white;
+            align-items: center;
         }
-        .foil .holo-layer {
-            background:
-                linear-gradient(
-                    var(--angle, 135deg),
-                    rgba(255,0,0,0.15), rgba(255,255,0,0.15), rgba(0,255,0,0.15),
-                    rgba(0,255,255,0.15), rgba(0,0,255,0.15), rgba(255,0,255,0.15), rgba(255,0,0,0.15)
-                ),
-                linear-gradient(
-                    135deg,
-                    rgba(255,255,255,0) 0%,
-                    rgba(255,255,255,0.3) 50%,
-                    rgba(255,255,255,0) 100%
-                );
-            background-size: 400% 400%, 200% 200%;
-            background-position: calc(var(--mx, 0.5) * 100%) calc(var(--my, 0.5) * 100%), calc(var(--mx, 0.5) * 100%) calc(var(--my, 0.5) * 100%);
-            mix-blend-mode: color-dodge;
-            opacity: 0.6;
+        .test-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
-        .ghost-rare img {
-            filter: grayscale(1) brightness(1.2) contrast(0.8) !important;
+        .btn-test {
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .btn-test.active {
+            background: #00a8ff;
+            border-color: #00d2ff;
+        }
+        .instructions {
+            max-width: 600px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #888;
         }
     </style>
 </head>
 <body>
-    <div class="test-container">
+    <h1>Prueba de Efecto 3D y Holograma</h1>
 
-        <!-- SUPER RARE -->
-        <div class="card-item">
-            <div class="card-wrapper super-rare">
-                <div class="card-3d">
-                    <div class="z-text" data-z data-z-layers="15" data-z-depth="15px">
-                        <img src="https://images.pokemontcg.io/swsh4/25_hierarchy.png" class="card-image">
-                    </div>
-                    <div class="holo-layer"></div>
-                </div>
-            </div>
-            <div class="card-label">Super Rare</div>
-        </div>
-
-        <!-- FOIL -->
-        <div class="card-item">
-            <div class="card-wrapper foil">
-                <div class="card-3d">
-                    <div class="z-text" data-z data-z-layers="15" data-z-depth="15px">
-                        <img src="https://images.pokemontcg.io/swsh1/1_hierarchy.png" class="card-image">
-                    </div>
-                    <div class="holo-layer"></div>
-                </div>
-            </div>
-            <div class="card-label">Foil</div>
-        </div>
-
-        <!-- RAINBOW -->
-        <div class="card-item">
-            <div class="card-wrapper rainbow">
-                <div class="card-3d">
-                    <div class="z-text" data-z data-z-layers="15" data-z-depth="15px">
-                        <img src="https://images.pokemontcg.io/sm12/236_hierarchy.png" class="card-image">
-                    </div>
-                    <div class="holo-layer"></div>
-                </div>
-            </div>
-            <div class="card-label">Rainbow</div>
-        </div>
-
-        <!-- GHOST RARE -->
-        <div class="card-item">
-            <div class="card-wrapper ghost-rare">
-                <div class="card-3d">
-                    <div class="z-text" data-z data-z-layers="15" data-z-depth="15px">
-                        <img src="https://images.pokemontcg.io/base1/4_hierarchy.png" class="card-image">
-                    </div>
-                    <div class="holo-layer"></div>
-                </div>
-            </div>
-            <div class="card-label">Ghost Rare</div>
-        </div>
-
+    <div class="test-controls">
+        <button class="btn-test active" data-effect="">Sin Efecto</button>
+        <button class="btn-test" data-effect="super-rare">Super Rare</button>
+        <button class="btn-test" data-effect="secret-rare">Secret Rare</button>
+        <button class="btn-test" data-effect="foil">Foil</button>
+        <button class="btn-test" data-effect="rainbow">Rainbow</button>
+        <button class="btn-test" data-effect="ghost-rare">Ghost Rare</button>
     </div>
 
-    <script src="js/ztext.js"></script>
-    <script src="js/test.js"></script>
+    <div id="card-3d-container" class="card-3d-container">
+        <div id="card-3d" class="card-3d">
+            <div id="z-text-container">
+                <img id="expanded-image" src="https://picsum.photos/220/308" alt="Test Card">
+            </div>
+            <div class="holo-layer"></div>
+        </div>
+    </div>
+
+    <div class="instructions">
+        <p>Mueve el mouse sobre la carta, arrastra con el dedo o mueve tu celular (giroscopio) para ver el efecto.</p>
+        <p>El movimiento es suave gracias a la interpolación lineal (LERP).</p>
+    </div>
+
+    <script>
+        // Copy logic from app.js to test here
+        let targetRX = 0;
+        let targetRY = 0;
+        let currentRX = 0;
+        let currentRY = 0;
+        let card3dActive = true;
+        let card3dZtext = null;
+
+        function updateRotation() {
+            if (!card3dActive) return;
+
+            currentRX += (targetRX - currentRX) * 0.1;
+            currentRY += (targetRY - currentRY) * 0.1;
+
+            const $card = $('#card-3d');
+            if ($card.length) {
+                $card.css('transform', `rotateX(${currentRX}deg) rotateY(${currentRY}deg)`);
+
+                const mx = (currentRY + 20) / 40;
+                const my = (currentRX + 20) / 40;
+                const angle = (Math.atan2(currentRX, currentRY) * 180 / Math.PI) + 135;
+
+                $card.css({
+                    '--mx': mx,
+                    '--my': my,
+                    '--angle': `${angle}deg`
+                });
+            }
+
+            requestAnimationFrame(updateRotation);
+        }
+
+        function init3D() {
+            try {
+                card3dZtext = new Ztextify('#z-text-container', {
+                    depth: "6px",
+                    layers: 8,
+                    fade: true,
+                    direction: "both",
+                    event: "none",
+                    perspective: "500px"
+                });
+            } catch (e) { console.error(e); }
+
+            const $container = $('#card-3d-container');
+
+            $container.on('mousemove', (e) => {
+                const rect = $container[0].getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                targetRY = ((x / rect.width) - 0.5) * 40;
+                targetRX = ((y / rect.height) - 0.5) * -40;
+            });
+
+            $container.on('mouseleave touchend', () => {
+                targetRX = 0;
+                targetRY = 0;
+            });
+
+            $container[0].addEventListener('touchmove', (e) => {
+                const rect = $container[0].getBoundingClientRect();
+                const touch = e.touches[0];
+                const x = touch.clientX - rect.left;
+                const y = touch.clientY - rect.top;
+                targetRY = ((x / rect.width) - 0.5) * 40;
+                targetRX = ((y / rect.height) - 0.5) * -40;
+                if (e.cancelable) e.preventDefault();
+            }, { passive: false });
+
+            if (window.DeviceOrientationEvent) {
+                window.addEventListener('deviceorientation', (e) => {
+                    if (e.gamma !== null && e.beta !== null) {
+                        targetRY = Math.max(-20, Math.min(20, e.gamma)) * 1.5;
+                        targetRX = Math.max(-20, Math.min(20, e.beta - 45)) * 1.5;
+                    }
+                });
+            }
+
+            requestAnimationFrame(updateRotation);
+        }
+
+        $(document).ready(() => {
+            init3D();
+
+            $('.btn-test').click(function() {
+                const effect = $(this).data('effect');
+                $('.btn-test').removeClass('active');
+                $(this).addClass('active');
+
+                const $container = $('#card-3d-container');
+                $container.removeClass('super-rare secret-rare foil rainbow ghost-rare active');
+
+                if (effect) {
+                    $container.addClass(effect);
+                    setTimeout(() => $container.addClass('active'), 50);
+                }
+            });
+        });
+    </script>
 </body>
 </html>
