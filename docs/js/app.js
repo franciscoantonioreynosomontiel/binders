@@ -3,6 +3,10 @@ let isMoving = false;
 let isManualPageTurn = false;
 let startX, startY;
 
+// Variables para el control de movimiento del álbum
+let isAlbumMoving = false;
+let albumStartX, albumStartY;
+
 $(document).ready(async function() {
     if ($.isTouch === undefined) {
         $.isTouch = 'ontouchstart' in window;
@@ -42,7 +46,11 @@ $(document).ready(async function() {
         startX = undefined;
         startY = undefined;
         setTimeout(() => { isDragging = false; }, 100);
+
+        albumStartX = undefined;
+        albumStartY = undefined;
     });
+
 
     $(document).on("click", ".card-slot", function(e) {
         if (isDragging) return;
@@ -582,6 +590,22 @@ async function renderAlbum(album) {
     const $albumDiv = $albumContainer.find('.album');
     $('#albums-container').append($albumContainer);
 
+    // --- Album Interaction Logic ---
+    $albumDiv.on("touchstart mousedown", function(e) {
+        isAlbumMoving = false;
+        const ev = e.type.startsWith('touch') ? (e.originalEvent.touches ? e.originalEvent.touches[0] : e) : e;
+        albumStartX = ev.pageX;
+        albumStartY = ev.pageY;
+    });
+
+    $albumDiv.on("touchmove mousemove", function(e) {
+        if (albumStartX === undefined || albumStartY === undefined) return;
+        const ev = e.type.startsWith('touch') ? (e.originalEvent.touches ? e.originalEvent.touches[0] : e) : e;
+        if (Math.abs(ev.pageX - albumStartX) > 10 || Math.abs(ev.pageY - albumStartY) > 10) {
+            isAlbumMoving = true;
+        }
+    });
+
     const { data: pages } = await _supabase
         .from('pages')
         .select('*')
@@ -655,7 +679,7 @@ async function renderAlbum(album) {
             gradients: true,
             acceleration: true,
             display: 'double',
-            elevation: 50,
+            elevation: isMobile ? 0 : 50,
             duration: 1000,
             // Ajustar cornerSize basado en el tamaño del álbum
             cornerSize: isMobile ? 100 : 50,
@@ -665,7 +689,15 @@ async function renderAlbum(album) {
                     if (!corner && !isManualPageTurn) {
                         event.preventDefault();
                     }
-                }
+                },
+                released: function(event) {
+                    const isMobileDevice = window.innerWidth <= 640;
+                    // En móvil, si no ha habido arrastre, prevenir el flip automático por click
+                    if (isMobileDevice && !isManualPageTurn && !isAlbumMoving) {
+                        event.stopImmediatePropagation();
+                        event.preventDefault();
+                    }
+                },
             }
         });
     };
