@@ -3,6 +3,10 @@ let isMoving = false;
 let isManualPageTurn = false;
 let startX, startY;
 
+// Variables para el control de movimiento del álbum
+let isAlbumMoving = false;
+let albumStartX, albumStartY;
+
 $(document).ready(async function() {
     if ($.isTouch === undefined) {
         $.isTouch = 'ontouchstart' in window;
@@ -42,7 +46,11 @@ $(document).ready(async function() {
         startX = undefined;
         startY = undefined;
         setTimeout(() => { isDragging = false; }, 100);
+
+        albumStartX = undefined;
+        albumStartY = undefined;
     });
+
 
     $(document).on("click", ".card-slot", function(e) {
         if (isDragging) return;
@@ -582,6 +590,27 @@ async function renderAlbum(album) {
     const $albumDiv = $albumContainer.find('.album');
     $('#albums-container').append($albumContainer);
 
+    // --- Album Interaction Logic ---
+    $albumDiv.on("touchstart mousedown", function(e) {
+        isAlbumMoving = false;
+        const ev = e.type.startsWith('touch') ? (e.originalEvent.touches ? e.originalEvent.touches[0] : e) : e;
+        albumStartX = ev.pageX;
+        albumStartY = ev.pageY;
+    });
+
+    $albumDiv.on("touchmove mousemove", function(e) {
+        if (albumStartX === undefined || albumStartY === undefined) return;
+        const ev = e.type.startsWith('touch') ? (e.originalEvent.touches ? e.originalEvent.touches[0] : e) : e;
+        if (Math.abs(ev.pageX - albumStartX) > 5 || Math.abs(ev.pageY - albumStartY) > 5) {
+            isAlbumMoving = true;
+        }
+    });
+
+    $albumDiv.on("touchend mouseup", function() {
+        // Pequeño delay para asegurar que Turn.js procese los eventos con el estado correcto
+        setTimeout(() => { isAlbumMoving = false; }, 150);
+    });
+
     const { data: pages } = await _supabase
         .from('pages')
         .select('*')
@@ -661,7 +690,7 @@ async function renderAlbum(album) {
             cornerSize: isMobile ? 20 : 50,
             when: {
                 start: function(event, pageObject, corner) {
-                    // Solo permitir el giro si es desde una esquina o disparado manualmente por búsqueda
+                    // Solo permitir el inicio si es desde una esquina o disparado manualmente
                     if (!corner && !isManualPageTurn) {
                         event.preventDefault();
                     }
