@@ -939,10 +939,11 @@ input:checked + .slider:before {
 
     .album-wrapper {
         width: 100%;
-        height: auto;
-        margin: 20px auto;
+        /* Ajuste para que no se vea tan alargado/vacío en móvil */
+        height: 280px;
+        margin: 10px auto;
         position: relative;
-        overflow: visible;
+        overflow: hidden;
         display: flex;
         justify-content: center;
         align-items: center;
