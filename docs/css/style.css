@@ -68,12 +68,17 @@ body {
     user-select: none;  
     position: relative;
     margin: 0 !important;
+    will-change: transform;
     touch-action: none !important;
+    backface-visibility: hidden;
+    transform: translate3d(0,0,0);
 }
+
+
 
 /* Ensure internal turn.js pages are properly positioned */
 .album .turn-page {
-    /* position: absolute; */
+    position: absolute !important;
 }
 
 .page {    
@@ -84,6 +89,9 @@ body {
     height: 420px;
     box-shadow: inset 0 0 50px rgba(0,0,0,0.5); 
     overflow: hidden;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform: translate3d(0,0,0);
 }  
 
 

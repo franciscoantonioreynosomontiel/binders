@@ -601,14 +601,16 @@ async function renderAlbum(album) {
     $albumDiv.on("touchmove mousemove", function(e) {
         if (albumStartX === undefined || albumStartY === undefined) return;
         const ev = e.type.startsWith('touch') ? (e.originalEvent.touches ? e.originalEvent.touches[0] : e) : e;
-        if (Math.abs(ev.pageX - albumStartX) > 5 || Math.abs(ev.pageY - albumStartY) > 5) {
+        // Umbral de 15px para móviles para evitar falsos positivos por "dedos gordos"
+        const threshold = window.innerWidth <= 1024 ? 15 : 5;
+        if (Math.abs(ev.pageX - albumStartX) > threshold || Math.abs(ev.pageY - albumStartY) > threshold) {
             isAlbumMoving = true;
         }
     });
 
     $albumDiv.on("touchend mouseup", function() {
-        // Pequeño delay para asegurar que Turn.js procese los eventos con el estado correcto
-        setTimeout(() => { isAlbumMoving = false; }, 150);
+        // Delay para asegurar que Turn.js procese los eventos con el estado correcto antes de resetear
+        setTimeout(() => { isAlbumMoving = false; }, 200);
     });
 
     const { data: pages } = await _supabase
@@ -681,30 +683,38 @@ async function renderAlbum(album) {
             width: width,
             height: height,
             autoCenter: true,
-            gradients: !isMobile, // Desactivar gradientes en móvil para evitar traslapes
+            gradients: !isMobile, // Desactivar gradientes en móvil para estabilidad
             acceleration: true,
             display: 'double',
-            elevation: 0,
+            elevation: isMobile ? 0 : 50,
             duration: 1000,
-            // Ajustar cornerSize a un valor mínimo en móvil
-            cornerSize: isMobile ? 20 : 50,
+            // cornerSize reducido en móvil para evitar que los slots de cartas activen el flip
+            cornerSize: isMobile ? 50 : 50,
             when: {
                 start: function(event, pageObject, corner) {
-                    // Solo permitir el inicio si es desde una esquina o disparado manualmente
+                    const isMobileDevice = window.innerWidth <= 1024;
+
+                    // Solo permitir el inicio si es desde una esquina detectada o disparado manualmente
                     if (!corner && !isManualPageTurn) {
                         event.preventDefault();
+                        return;
+                    }
+
+                    // En móvil, si el toque inicial es sobre una carta, bloqueamos el inicio del flip
+                    // Esto evita que la esquina "pelee" o se mueva al querer abrir el popup
+                    if (isMobileDevice && !isManualPageTurn) {
+                        if ($(event.target).closest('.card-slot').length > 0) {
+                            event.preventDefault();
+                            return;
+                        }
                     }
                 },
-                turned: function(event, page, view) {
-                    // Desactivar pointer-events en páginas que no están en la vista actual para evitar traslapes
-                    $(this).find('.page-wrapper').each(function() {
-                        const p = parseInt($(this).attr('page'));
-                        if (view.indexOf(p) !== -1) {
-                            this.style.setProperty('pointer-events', 'auto', 'important');
-                        } else {
-                            this.style.setProperty('pointer-events', 'none', 'important');
-                        }
-                    });
+                turning: function(event, page, view) {
+                    const isMobileDevice = window.innerWidth <= 1024;
+                    // Seguridad adicional: bloquear giro si no hay movimiento detectado (click simple)
+                    if (isMobileDevice && !isManualPageTurn && !isAlbumMoving) {
+                        event.preventDefault();
+                    }
                 }
             }
         });
