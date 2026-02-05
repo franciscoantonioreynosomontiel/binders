@@ -3,10 +3,6 @@ let isMoving = false;
 let isManualPageTurn = false;
 let startX, startY;
 
-// Variables para el control de movimiento del álbum
-let isAlbumMoving = false;
-let albumStartX, albumStartY;
-
 $(document).ready(async function() {
     if ($.isTouch === undefined) {
         $.isTouch = 'ontouchstart' in window;
@@ -46,11 +42,7 @@ $(document).ready(async function() {
         startX = undefined;
         startY = undefined;
         setTimeout(() => { isDragging = false; }, 100);
-
-        albumStartX = undefined;
-        albumStartY = undefined;
     });
-
 
     $(document).on("click", ".card-slot", function(e) {
         if (isDragging) return;
@@ -590,29 +582,6 @@ async function renderAlbum(album) {
     const $albumDiv = $albumContainer.find('.album');
     $('#albums-container').append($albumContainer);
 
-    // --- Album Interaction Logic ---
-    $albumDiv.on("touchstart mousedown", function(e) {
-        isAlbumMoving = false;
-        const ev = e.type.startsWith('touch') ? (e.originalEvent.touches ? e.originalEvent.touches[0] : e) : e;
-        albumStartX = ev.pageX;
-        albumStartY = ev.pageY;
-    });
-
-    $albumDiv.on("touchmove mousemove", function(e) {
-        if (albumStartX === undefined || albumStartY === undefined) return;
-        const ev = e.type.startsWith('touch') ? (e.originalEvent.touches ? e.originalEvent.touches[0] : e) : e;
-        // Umbral de 15px para móviles para evitar falsos positivos por "dedos gordos"
-        const threshold = window.innerWidth <= 1024 ? 15 : 5;
-        if (Math.abs(ev.pageX - albumStartX) > threshold || Math.abs(ev.pageY - albumStartY) > threshold) {
-            isAlbumMoving = true;
-        }
-    });
-
-    $albumDiv.on("touchend mouseup", function() {
-        // Delay para asegurar que Turn.js procese los eventos con el estado correcto antes de resetear
-        setTimeout(() => { isAlbumMoving = false; }, 200);
-    });
-
     const { data: pages } = await _supabase
         .from('pages')
         .select('*')
@@ -625,7 +594,7 @@ async function renderAlbum(album) {
     for (const page of pages) {
         const $pageDiv = $('<div class="page"></div>');
         const $grid = $('<div class="grid-container"></div>');
-        
+
         const { data: slots } = await _supabase
             .from('card_slots')
             .select('*')
@@ -667,53 +636,28 @@ async function renderAlbum(album) {
         if (turnInitialized) return;
         turnInitialized = true;
 
-        // Calcular dimensiones basadas en el contenedor para evitar estiramiento en móvil
-        const containerWidth = $albumContainer.find('.album-wrapper').width();
-        const isMobile = window.innerWidth <= 640;
-
-        let width = 600;
-        let height = 420;
-
-        if (isMobile || containerWidth < 600) {
-            width = containerWidth;
-            height = Math.floor(width * (420 / 600));
-        }
+        // Usar dimensiones del DOM calculadas por CSS
+        const width = $albumDiv.width();
+        const height = $albumDiv.height();
+        const isMobile = window.innerWidth <= 992;
 
         $albumDiv.turn({
             width: width,
             height: height,
             autoCenter: true,
-            gradients: !isMobile, // Desactivar gradientes en móvil para estabilidad
+            gradients: true,
             acceleration: true,
             display: 'double',
-            elevation: isMobile ? 0 : 50,
+            elevation: 50,
             duration: 1000,
-            // cornerSize reducido en móvil para evitar que los slots de cartas activen el flip
-            cornerSize: isMobile ? 50 : 50,
+            // Ajustar cornerSize basado en el tamaño del álbum
+            cornerSize: isMobile ? 100 : 50,
             when: {
                 start: function(event, pageObject, corner) {
-                    const isMobileDevice = window.innerWidth <= 1024;
-
-                    // Solo permitir el inicio si es desde una esquina detectada o disparado manualmente
+                    // Solo permitir el giro si es desde una esquina o disparado manualmente por búsqueda
                     if (!corner && !isManualPageTurn) {
                         event.preventDefault();
                         return;
-                    }
-
-                    // En móvil, si el toque inicial es sobre una carta, bloqueamos el inicio del flip
-                    // Esto evita que la esquina "pelee" o se mueva al querer abrir el popup
-                    if (isMobileDevice && !isManualPageTurn) {
-                        if ($(event.target).closest('.card-slot').length > 0) {
-                            event.preventDefault();
-                            return;
-                        }
-                    }
-                },
-                turning: function(event, page, view) {
-                    const isMobileDevice = window.innerWidth <= 1024;
-                    // Seguridad adicional: bloquear giro si no hay movimiento detectado (click simple)
-                    if (isMobileDevice && !isManualPageTurn && !isAlbumMoving) {
-                        event.preventDefault();
                     }
                 }
             }
