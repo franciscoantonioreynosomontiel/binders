@@ -48,28 +48,25 @@ body {
 .album-wrapper {
     flex: 0 0 auto;
     perspective: 2000px;
+    width: 600px;
+    height: 420px;
     position: relative;
     overflow: visible;
     transform-origin: center center;
     transition: transform 0.3s ease;
     touch-action: pan-y;
-    width: 922px;
-    height: 700px;
     display: flex;
     justify-content: center;
     align-items: center;
-    /* Evitar que cualquier cambio interno afecte el flujo del layout */
     contain: layout style;
 }
 
-/* ===== Tamaños responsivos del álbum (Configuración del Test) ===== */
 .album {
     width: 600px;
     height: 420px;
     box-shadow: 0 30px 60px rgba(0,0,0,0.8);
     user-select: none;
     position: relative;
-    /* Forzar estabilidad y evitar desplazamientos automáticos de Turn.js */
     margin: 0 !important;
     will-change: transform;
     touch-action: none !important;
@@ -146,36 +143,6 @@ body {
     margin: 0;
 }
 
-.zoom-btn {
-    display: none;
-}
-
-@media (max-width: 640px) {
-    .zoom-btn {
-        display: flex;
-        position: absolute;
-        bottom: 4px;
-        right: 4px;
-        width: 24px;
-        height: 24px;
-        background: rgba(0, 0, 0, 0.5);
-        backdrop-filter: blur(4px);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        border-radius: 4px;
-        justify-content: center;
-        align-items: center;
-        color: white;
-        font-size: 12px;
-        z-index: 10;
-        cursor: pointer;
-        transition: transform 0.2s;
-    }
-
-    .zoom-btn:active {
-        transform: scale(0.9);
-        background: rgba(0, 168, 255, 0.6);
-    }
-}
 
 /* Modal Overlay */
 .overlay {
@@ -973,7 +940,6 @@ input:checked + .slider:before {
 
     .album-wrapper {
         width: 100%;
-        max-width: 600px;
         height: auto;
         margin: 20px auto;
         position: relative;
@@ -982,15 +948,11 @@ input:checked + .slider:before {
         justify-content: center;
         align-items: center;
         transform: none;
-        contain: layout style;
     }
 
     .album {
-        margin: 0 auto !important;
+        margin: 0 !important;
         box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-        width: 600px;
-        height: 420px;
-        will-change: transform;
     }
 
     .public-album-item {
