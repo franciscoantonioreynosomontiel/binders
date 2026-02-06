@@ -330,44 +330,41 @@ function init3DCard() {
 
 // Helper to attach priority events to card slots
 function setupCardPriority($el) {
-    $el.on('touchstart touchmove touchend mousedown mousemove mouseup click', function(e) {
-        // Bloquear propagación para que Turn.js (en .album) no reciba el evento
-        // Esto le da prioridad absoluta a la interacción con la carta
+    // Interceptamos touchstart y mousedown para evitar que Turn.js vea el evento inicial en la carta
+    // Esto previene que Turn.js active el "peel" o giro accidental al tocar una carta cerca de la esquina
+    $el.on('touchstart mousedown', function(e) {
         e.stopPropagation();
-
-        const isMobile = window.innerWidth <= 640;
-        const $target = $(e.target);
-        const isZoomBtn = $target.closest('.zoom-btn').length > 0;
         const ev = e.type.startsWith('touch') ? e.originalEvent.touches[0] : e;
+        isDragging = false;
+        startX = ev.pageX;
+        startY = ev.pageY;
+    });
 
-        if (e.type === 'touchstart' || e.type === 'mousedown') {
-            isDragging = false;
-            startX = ev.pageX;
-            startY = ev.pageY;
-        } else if (e.type === 'touchmove' || e.type === 'mousemove') {
-            if (startX !== undefined && startY !== undefined) {
-                if (Math.abs(ev.pageX - startX) > 5 || Math.abs(ev.pageY - startY) > 5) {
-                    isDragging = true;
-                }
-            }
-        } else if (e.type === 'touchend' || e.type === 'mouseup') {
-            startX = undefined;
-            startY = undefined;
-            // Retrasar el reseteo para que el evento 'click' pueda verificar isDragging
-            setTimeout(() => { isDragging = false; }, 100);
-        } else if (e.type === 'click') {
-            if (!isDragging) {
-                if (isMobile) {
-                    // En móvil solo abrimos si se clickea el botón de lupa
-                    if (isZoomBtn) {
-                        openCardModal($(this));
-                    }
-                } else {
-                    // En PC abrimos al clickear cualquier parte de la carta
-                    openCardModal($(this));
-                }
+    // En el movimiento, no detenemos propagación para no interferir con el scroll nativo si fuera necesario,
+    // pero Turn.js no iniciará el flip porque no recibió el 'start' inicial.
+    $el.on('touchmove mousemove', function(e) {
+        if (startX !== undefined && startY !== undefined) {
+            const ev = e.type.startsWith('touch') ? e.originalEvent.touches[0] : e;
+            if (Math.abs(ev.pageX - startX) > 10 || Math.abs(ev.pageY - startY) > 10) {
+                isDragging = true;
             }
         }
+    });
+
+    $el.on('touchend mouseup click', function(e) {
+        // Bloqueamos la propagación final para asegurar que Turn.js no reciba el click
+        e.stopPropagation();
+
+        if (e.type === 'click') {
+            if (!isDragging) {
+                openCardModal($(this));
+            }
+        }
+
+        startX = undefined;
+        startY = undefined;
+        // Retrasar el reseteo para que eventos de click pendientes no se confundan
+        setTimeout(() => { isDragging = false; }, 150);
     });
 }
 
@@ -576,7 +573,6 @@ async function loadPublicDecks() {
                                      data-quantity="${card.quantity || '1'}"
                                      data-price="${card.price || ''}">
                                     <img src="${card.image_url}" alt="${card.name || 'Card'}" />
-                                    <div class="zoom-btn"><i class="fas fa-search-plus"></i></div>
                                 </div>
                             `).join('')}
                         </div>
@@ -654,7 +650,6 @@ async function renderAlbum(album) {
                 });
                 if (slotData.image_url) {
                     $slot.append(`<img src="${slotData.image_url}" class="tcg-card">`);
-                    $slot.append(`<div class="zoom-btn"><i class="fas fa-search-plus"></i></div>`);
                     setupCardPriority($slot);
                 }
             }
@@ -678,34 +673,58 @@ async function renderAlbum(album) {
         turnInitialized = true;
 
         const isMobile = window.innerWidth <= 640;
-        let width = $albumDiv.width() || 600;
-        let height = $albumDiv.height() || 420;
+
+        // Obtenemos dimensiones base
+        let width = 600;
+        let height = 420;
 
         if (isMobile) {
             const containerWidth = $albumContainer.width();
-            const availableWidth = Math.min(600, containerWidth - 10);
+            // Aseguramos que el ancho sea par para evitar desface por redondeo en Turn.js
+            const availableWidth = Math.floor(Math.min(600, containerWidth - 10) / 2) * 2;
             width = availableWidth;
             height = Math.floor(width * (420 / 600));
         }
 
+        // Aplicamos dimensiones al elemento antes de iniciar Turn.js
+        $albumDiv.css({
+            width: width + 'px',
+            height: height + 'px'
+        });
+
         $albumDiv.turn({
             width: width,
             height: height,
-            autoCenter: false, // Usar CSS flex para centrar y evitar desface dinámico
+            autoCenter: false, // Centrado manual por CSS para máxima estabilidad
             gradients: !isMobile,
             acceleration: true,
             display: 'double',
             elevation: isMobile ? 0 : 50,
             duration: 1000,
-            // Ajustar cornerSize basado en el tamaño del álbum
-            cornerSize: isMobile ? 80 : 50,
+            cornerSize: isMobile ? 60 : 50, // Reducir un poco el área sensible en móvil
             when: {
                 start: function(event, pageObject, corner) {
-                    // Solo permitir el giro si es desde una esquina o disparado manualmente por búsqueda
+                    // Bloqueamos el inicio del flip si es por un toque que no sea arrastre en bordes
+                    // o si estamos en medio de un cambio de página programático
                     if (!corner && !isManualPageTurn) {
                         event.preventDefault();
-                        return;
                     }
+                },
+                turning: function(e, page, view) {
+                    // Aseguramos que las páginas que van a ser visibles tengan pointer-events
+                    const $album = $(this);
+                    $album.find('.page-wrapper').css('pointer-events', 'none');
+                },
+                turned: function(e, page) {
+                    // Solo las páginas visibles deben interceptar eventos
+                    const $album = $(this);
+                    const view = $album.turn('view');
+                    $album.find('.page-wrapper').css('pointer-events', 'none');
+                    view.forEach(p => {
+                        if (p > 0) {
+                            $album.find(`.page-wrapper.page-${p}`).css('pointer-events', 'auto');
+                        }
+                    });
                 }
             }
         });
