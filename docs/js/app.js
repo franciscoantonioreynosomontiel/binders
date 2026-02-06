@@ -23,19 +23,14 @@ $(document).ready(async function() {
     }
 
     // --- Card Interaction Logic (Click Protection) ---
-    // Global tracking of drag state (fallback for non-priority areas)
-    $(document).on("touchstart mousedown", function(e) {
-        const $target = $(e.target).closest('.card-slot');
-        // Si es un slot de carta, setupCardPriority se encarga del isDragging local
-        if ($target.length) return;
-
+    $(document).on("touchstart mousedown", ".card-slot", function(e) {
         isDragging = false;
         const ev = e.type.startsWith('touch') ? e.originalEvent.touches[0] : e;
         startX = ev.pageX;
         startY = ev.pageY;
     });
 
-    $(document).on("touchmove mousemove", function(e) {
+    $(document).on("touchmove mousemove", ".card-slot", function(e) {
         if (startX === undefined || startY === undefined) return;
         const ev = e.type.startsWith('touch') ? e.originalEvent.touches[0] : e;
         if (Math.abs(ev.pageX - startX) > 5 || Math.abs(ev.pageY - startY) > 5) {
@@ -47,6 +42,26 @@ $(document).ready(async function() {
         startX = undefined;
         startY = undefined;
         setTimeout(() => { isDragging = false; }, 100);
+    });
+
+    // Delegated click handler as a fallback for desktop or cards without direct listeners
+    $(document).on("click", ".card-slot", function(e) {
+        if (isDragging) return;
+        const $slot = $(this);
+
+        // On mobile, the zoom button handles the click directly to avoid turn.js interference.
+        // If we are here on mobile and it's not the zoom button, we ignore it.
+        const isMobile = window.innerWidth <= 640;
+        if (isMobile) {
+            if (!$(e.target).closest('.zoom-btn').length) {
+                return;
+            }
+        }
+
+        if ($slot.closest('.album').length > 0) {
+            e.stopPropagation();
+        }
+        openCardModal($slot);
     });
 
     $(document).on("click", "#close-btn, #image-overlay", function(e) {
@@ -328,46 +343,6 @@ function init3DCard() {
     }
 }
 
-// Helper to attach priority events to card slots
-function setupCardPriority($el) {
-    // Interceptamos touchstart y mousedown para evitar que Turn.js vea el evento inicial en la carta
-    // Esto previene que Turn.js active el "peel" o giro accidental al tocar una carta cerca de la esquina
-    $el.on('touchstart mousedown', function(e) {
-        e.stopPropagation();
-        const ev = e.type.startsWith('touch') ? e.originalEvent.touches[0] : e;
-        isDragging = false;
-        startX = ev.pageX;
-        startY = ev.pageY;
-    });
-
-    // En el movimiento, no detenemos propagación para no interferir con el scroll nativo si fuera necesario,
-    // pero Turn.js no iniciará el flip porque no recibió el 'start' inicial.
-    $el.on('touchmove mousemove', function(e) {
-        if (startX !== undefined && startY !== undefined) {
-            const ev = e.type.startsWith('touch') ? e.originalEvent.touches[0] : e;
-            if (Math.abs(ev.pageX - startX) > 10 || Math.abs(ev.pageY - startY) > 10) {
-                isDragging = true;
-            }
-        }
-    });
-
-    $el.on('touchend mouseup click', function(e) {
-        // Bloqueamos la propagación final para asegurar que Turn.js no reciba el click
-        e.stopPropagation();
-
-        if (e.type === 'click') {
-            if (!isDragging) {
-                openCardModal($(this));
-            }
-        }
-
-        startX = undefined;
-        startY = undefined;
-        // Retrasar el reseteo para que eventos de click pendientes no se confundan
-        setTimeout(() => { isDragging = false; }, 150);
-    });
-}
-
 function openCardModal($slot) {
     const imgSrc = $slot.find("img").attr("src");
 
@@ -573,6 +548,7 @@ async function loadPublicDecks() {
                                      data-quantity="${card.quantity || '1'}"
                                      data-price="${card.price || ''}">
                                     <img src="${card.image_url}" alt="${card.name || 'Card'}" />
+                                    <div class="zoom-btn"><i class="fas fa-search-plus"></i></div>
                                 </div>
                             `).join('')}
                         </div>
@@ -583,9 +559,14 @@ async function loadPublicDecks() {
 
         $('#decks-container').append($deckItem);
 
-        // Attach priority listeners to all cards in the deck
-        $deckItem.find('.card-slot').each(function() {
-            setupCardPriority($(this));
+        // Bind zoom button events to stop propagation to swiper/turn.js
+        // We block all touch/mouse events in the bubble phase at the target
+        // to prevent them from reaching parent containers.
+        $deckItem.find('.zoom-btn').on('touchstart touchmove touchend mousedown mousemove mouseup click', function(e) {
+            e.stopPropagation();
+            if (e.type === 'click') {
+                openCardModal($(this).closest('.card-slot'));
+            }
         });
 
         new Swiper(`.${deckId}`, {
@@ -595,7 +576,21 @@ async function loadPublicDecks() {
             perSlideRotate: 2,
             rotate: true,
             slideShadows: true,
-            preventClicksPropagation: true // Prevent swiper from handling clicks that we already handled
+            preventClicksPropagation: false,
+            on: {
+                click: function(s, e) {
+                    if (!isDragging) {
+                        const $slot = $(e.target).closest('.card-slot');
+                        if ($slot.length) {
+                            const isMobile = window.innerWidth <= 640;
+                            if (isMobile) {
+                                if (!$(e.target).closest('.zoom-btn').length) return;
+                            }
+                            openCardModal($slot);
+                        }
+                    }
+                }
+            }
         });
     });
 }
@@ -650,7 +645,17 @@ async function renderAlbum(album) {
                 });
                 if (slotData.image_url) {
                     $slot.append(`<img src="${slotData.image_url}" class="tcg-card">`);
-                    setupCardPriority($slot);
+                    const $zoomBtn = $('<div class="zoom-btn"><i class="fas fa-search-plus"></i></div>');
+
+                    // Priority handling for mobile: block propagation to turn.js
+                    $zoomBtn.on('touchstart touchmove touchend mousedown mousemove mouseup click', function(e) {
+                        e.stopPropagation();
+                        if (e.type === 'click') {
+                            openCardModal($(this).closest('.card-slot'));
+                        }
+                    });
+
+                    $slot.append($zoomBtn);
                 }
             }
             $grid.append($slot);
@@ -673,58 +678,34 @@ async function renderAlbum(album) {
         turnInitialized = true;
 
         const isMobile = window.innerWidth <= 640;
-
-        // Obtenemos dimensiones base
-        let width = 600;
-        let height = 420;
+        let width = $albumDiv.width() || 600;
+        let height = $albumDiv.height() || 420;
 
         if (isMobile) {
             const containerWidth = $albumContainer.width();
-            // Aseguramos que el ancho sea par para evitar desface por redondeo en Turn.js
-            const availableWidth = Math.floor(Math.min(600, containerWidth - 10) / 2) * 2;
+            const availableWidth = Math.min(600, containerWidth - 10);
             width = availableWidth;
             height = Math.floor(width * (420 / 600));
         }
 
-        // Aplicamos dimensiones al elemento antes de iniciar Turn.js
-        $albumDiv.css({
-            width: width + 'px',
-            height: height + 'px'
-        });
-
         $albumDiv.turn({
             width: width,
             height: height,
-            autoCenter: false, // Centrado manual por CSS para máxima estabilidad
+            autoCenter: true,
             gradients: !isMobile,
             acceleration: true,
             display: 'double',
             elevation: isMobile ? 0 : 50,
             duration: 1000,
-            cornerSize: isMobile ? 60 : 50, // Reducir un poco el área sensible en móvil
+            // Ajustar cornerSize basado en el tamaño del álbum
+            cornerSize: isMobile ? 80 : 50,
             when: {
                 start: function(event, pageObject, corner) {
-                    // Bloqueamos el inicio del flip si es por un toque que no sea arrastre en bordes
-                    // o si estamos en medio de un cambio de página programático
+                    // Solo permitir el giro si es desde una esquina o disparado manualmente por búsqueda
                     if (!corner && !isManualPageTurn) {
                         event.preventDefault();
+                        return;
                     }
-                },
-                turning: function(e, page, view) {
-                    // Aseguramos que las páginas que van a ser visibles tengan pointer-events
-                    const $album = $(this);
-                    $album.find('.page-wrapper').css('pointer-events', 'none');
-                },
-                turned: function(e, page) {
-                    // Solo las páginas visibles deben interceptar eventos
-                    const $album = $(this);
-                    const view = $album.turn('view');
-                    $album.find('.page-wrapper').css('pointer-events', 'none');
-                    view.forEach(p => {
-                        if (p > 0) {
-                            $album.find(`.page-wrapper.page-${p}`).css('pointer-events', 'auto');
-                        }
-                    });
                 }
             }
         });
