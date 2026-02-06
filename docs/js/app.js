@@ -47,6 +47,15 @@ $(document).ready(async function() {
     $(document).on("click", ".card-slot", function(e) {
         if (isDragging) return;
         const $slot = $(this);
+
+        // En móvil (donde se muestra la lupa), solo abrir si se clickea la lupa
+        const isMobile = window.innerWidth <= 640;
+        if (isMobile) {
+            if (!$(e.target).closest('.zoom-btn').length) {
+                return;
+            }
+        }
+
         if ($slot.closest('.album').length > 0) {
             e.stopPropagation();
         }
@@ -537,6 +546,7 @@ async function loadPublicDecks() {
                                      data-quantity="${card.quantity || '1'}"
                                      data-price="${card.price || ''}">
                                     <img src="${card.image_url}" alt="${card.name || 'Card'}" />
+                                    <div class="zoom-btn"><i class="fas fa-search-plus"></i></div>
                                 </div>
                             `).join('')}
                         </div>
@@ -559,7 +569,13 @@ async function loadPublicDecks() {
                 click: function(s, e) {
                     if (!isDragging) {
                         const $slot = $(e.target).closest('.card-slot');
-                        if ($slot.length) openCardModal($slot);
+                        if ($slot.length) {
+                            const isMobile = window.innerWidth <= 640;
+                            if (isMobile) {
+                                if (!$(e.target).closest('.zoom-btn').length) return;
+                            }
+                            openCardModal($slot);
+                        }
                     }
                 }
             }
@@ -615,7 +631,10 @@ async function renderAlbum(album) {
                     'data-quantity': slotData.quantity || '',
                     'data-price': slotData.price || ''
                 });
-                if (slotData.image_url) $slot.append(`<img src="${slotData.image_url}" class="tcg-card">`);
+                if (slotData.image_url) {
+                    $slot.append(`<img src="${slotData.image_url}" class="tcg-card">`);
+                    $slot.append('<div class="zoom-btn"><i class="fas fa-search-plus"></i></div>');
+                }
             }
             $grid.append($slot);
         }
@@ -636,22 +655,28 @@ async function renderAlbum(album) {
         if (turnInitialized) return;
         turnInitialized = true;
 
-        // Usar dimensiones del DOM calculadas por CSS
-        const width = $albumDiv.width();
-        const height = $albumDiv.height();
-        const isMobile = window.innerWidth <= 992;
+        const isMobile = window.innerWidth <= 640;
+        let width = $albumDiv.width() || 600;
+        let height = $albumDiv.height() || 420;
+
+        if (isMobile) {
+            const containerWidth = $albumContainer.width();
+            const availableWidth = Math.min(600, containerWidth - 10);
+            width = availableWidth;
+            height = Math.floor(width * (420 / 600));
+        }
 
         $albumDiv.turn({
             width: width,
             height: height,
             autoCenter: true,
-            gradients: true,
+            gradients: !isMobile,
             acceleration: true,
             display: 'double',
-            elevation: 50,
+            elevation: isMobile ? 0 : 50,
             duration: 1000,
             // Ajustar cornerSize basado en el tamaño del álbum
-            cornerSize: isMobile ? 100 : 50,
+            cornerSize: isMobile ? 80 : 50,
             when: {
                 start: function(event, pageObject, corner) {
                     // Solo permitir el giro si es desde una esquina o disparado manualmente por búsqueda
