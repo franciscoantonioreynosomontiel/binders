@@ -143,36 +143,6 @@ body {
     margin: 0;
 }
 
-/* Card Zoom Button */
-.zoom-btn {
-    display: none;
-    position: absolute;
-    bottom: 5px;
-    right: 5px;
-    width: 26px;
-    height: 26px;
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 4px;
-    color: white;
-    justify-content: center;
-    align-items: center;
-    z-index: 10;
-    backdrop-filter: blur(2px);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    pointer-events: auto;
-}
-
-.zoom-btn:hover {
-    background: rgba(0, 168, 255, 0.6);
-}
-
-.zoom-btn i {
-    font-size: 12px;
-    opacity: 0.9;
-}
-
 /* Modal Overlay */
 .overlay {
     display: none;
@@ -963,10 +933,6 @@ input:checked + .slider:before {
 }
 
 @media (max-width: 640px) {
-    .zoom-btn {
-        display: flex;
-    }
-
     .main-container {
         padding: 20px 10px;
     }

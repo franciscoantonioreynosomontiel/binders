@@ -49,15 +49,6 @@ $(document).ready(async function() {
         if (isDragging) return;
         const $slot = $(this);
 
-        // On mobile, the zoom button handles the click directly to avoid turn.js interference.
-        // If we are here on mobile and it's not the zoom button, we ignore it.
-        const isMobile = window.innerWidth <= 640;
-        if (isMobile) {
-            if (!$(e.target).closest('.zoom-btn').length) {
-                return;
-            }
-        }
-
         if ($slot.closest('.album').length > 0) {
             e.stopPropagation();
         }
@@ -548,7 +539,6 @@ async function loadPublicDecks() {
                                      data-quantity="${card.quantity || '1'}"
                                      data-price="${card.price || ''}">
                                     <img src="${card.image_url}" alt="${card.name || 'Card'}" />
-                                    <div class="zoom-btn"><i class="fas fa-search-plus"></i></div>
                                 </div>
                             `).join('')}
                         </div>
@@ -558,16 +548,6 @@ async function loadPublicDecks() {
         `);
 
         $('#decks-container').append($deckItem);
-
-        // Bind zoom button events to stop propagation to swiper/turn.js
-        // We block all touch/mouse events in the bubble phase at the target
-        // to prevent them from reaching parent containers.
-        $deckItem.find('.zoom-btn').on('touchstart touchmove touchend mousedown mousemove mouseup click', function(e) {
-            e.stopPropagation();
-            if (e.type === 'click') {
-                openCardModal($(this).closest('.card-slot'));
-            }
-        });
 
         new Swiper(`.${deckId}`, {
             effect: "cards",
@@ -582,10 +562,6 @@ async function loadPublicDecks() {
                     if (!isDragging) {
                         const $slot = $(e.target).closest('.card-slot');
                         if ($slot.length) {
-                            const isMobile = window.innerWidth <= 640;
-                            if (isMobile) {
-                                if (!$(e.target).closest('.zoom-btn').length) return;
-                            }
                             openCardModal($slot);
                         }
                     }
@@ -645,17 +621,6 @@ async function renderAlbum(album) {
                 });
                 if (slotData.image_url) {
                     $slot.append(`<img src="${slotData.image_url}" class="tcg-card">`);
-                    const $zoomBtn = $('<div class="zoom-btn"><i class="fas fa-search-plus"></i></div>');
-
-                    // Priority handling for mobile: block propagation to turn.js
-                    $zoomBtn.on('touchstart touchmove touchend mousedown mousemove mouseup click', function(e) {
-                        e.stopPropagation();
-                        if (e.type === 'click') {
-                            openCardModal($(this).closest('.card-slot'));
-                        }
-                    });
-
-                    $slot.append($zoomBtn);
                 }
             }
             $grid.append($slot);
