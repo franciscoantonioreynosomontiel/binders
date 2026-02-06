@@ -23,14 +23,19 @@ $(document).ready(async function() {
     }
 
     // --- Card Interaction Logic (Click Protection) ---
-    $(document).on("touchstart mousedown", ".card-slot", function(e) {
+    // Global tracking of drag state (fallback for non-priority areas)
+    $(document).on("touchstart mousedown", function(e) {
+        const $target = $(e.target).closest('.card-slot');
+        // Si es un slot de carta, setupCardPriority se encarga del isDragging local
+        if ($target.length) return;
+
         isDragging = false;
         const ev = e.type.startsWith('touch') ? e.originalEvent.touches[0] : e;
         startX = ev.pageX;
         startY = ev.pageY;
     });
 
-    $(document).on("touchmove mousemove", ".card-slot", function(e) {
+    $(document).on("touchmove mousemove", function(e) {
         if (startX === undefined || startY === undefined) return;
         const ev = e.type.startsWith('touch') ? e.originalEvent.touches[0] : e;
         if (Math.abs(ev.pageX - startX) > 5 || Math.abs(ev.pageY - startY) > 5) {
@@ -42,17 +47,6 @@ $(document).ready(async function() {
         startX = undefined;
         startY = undefined;
         setTimeout(() => { isDragging = false; }, 100);
-    });
-
-    // Delegated click handler as a fallback for desktop or cards without direct listeners
-    $(document).on("click", ".card-slot", function(e) {
-        if (isDragging) return;
-        const $slot = $(this);
-
-        if ($slot.closest('.album').length > 0) {
-            e.stopPropagation();
-        }
-        openCardModal($slot);
     });
 
     $(document).on("click", "#close-btn, #image-overlay", function(e) {
@@ -334,6 +328,49 @@ function init3DCard() {
     }
 }
 
+// Helper to attach priority events to card slots
+function setupCardPriority($el) {
+    $el.on('touchstart touchmove touchend mousedown mousemove mouseup click', function(e) {
+        // Bloquear propagación para que Turn.js (en .album) no reciba el evento
+        // Esto le da prioridad absoluta a la interacción con la carta
+        e.stopPropagation();
+
+        const isMobile = window.innerWidth <= 640;
+        const $target = $(e.target);
+        const isZoomBtn = $target.closest('.zoom-btn').length > 0;
+        const ev = e.type.startsWith('touch') ? e.originalEvent.touches[0] : e;
+
+        if (e.type === 'touchstart' || e.type === 'mousedown') {
+            isDragging = false;
+            startX = ev.pageX;
+            startY = ev.pageY;
+        } else if (e.type === 'touchmove' || e.type === 'mousemove') {
+            if (startX !== undefined && startY !== undefined) {
+                if (Math.abs(ev.pageX - startX) > 5 || Math.abs(ev.pageY - startY) > 5) {
+                    isDragging = true;
+                }
+            }
+        } else if (e.type === 'touchend' || e.type === 'mouseup') {
+            startX = undefined;
+            startY = undefined;
+            // Retrasar el reseteo para que el evento 'click' pueda verificar isDragging
+            setTimeout(() => { isDragging = false; }, 100);
+        } else if (e.type === 'click') {
+            if (!isDragging) {
+                if (isMobile) {
+                    // En móvil solo abrimos si se clickea el botón de lupa
+                    if (isZoomBtn) {
+                        openCardModal($(this));
+                    }
+                } else {
+                    // En PC abrimos al clickear cualquier parte de la carta
+                    openCardModal($(this));
+                }
+            }
+        }
+    });
+}
+
 function openCardModal($slot) {
     const imgSrc = $slot.find("img").attr("src");
 
@@ -539,6 +576,7 @@ async function loadPublicDecks() {
                                      data-quantity="${card.quantity || '1'}"
                                      data-price="${card.price || ''}">
                                     <img src="${card.image_url}" alt="${card.name || 'Card'}" />
+                                    <div class="zoom-btn"><i class="fas fa-search-plus"></i></div>
                                 </div>
                             `).join('')}
                         </div>
@@ -549,6 +587,11 @@ async function loadPublicDecks() {
 
         $('#decks-container').append($deckItem);
 
+        // Attach priority listeners to all cards in the deck
+        $deckItem.find('.card-slot').each(function() {
+            setupCardPriority($(this));
+        });
+
         new Swiper(`.${deckId}`, {
             effect: "cards",
             grabCursor: true,
@@ -556,17 +599,7 @@ async function loadPublicDecks() {
             perSlideRotate: 2,
             rotate: true,
             slideShadows: true,
-            preventClicksPropagation: false,
-            on: {
-                click: function(s, e) {
-                    if (!isDragging) {
-                        const $slot = $(e.target).closest('.card-slot');
-                        if ($slot.length) {
-                            openCardModal($slot);
-                        }
-                    }
-                }
-            }
+            preventClicksPropagation: true // Prevent swiper from handling clicks that we already handled
         });
     });
 }
@@ -621,6 +654,8 @@ async function renderAlbum(album) {
                 });
                 if (slotData.image_url) {
                     $slot.append(`<img src="${slotData.image_url}" class="tcg-card">`);
+                    $slot.append(`<div class="zoom-btn"><i class="fas fa-search-plus"></i></div>`);
+                    setupCardPriority($slot);
                 }
             }
             $grid.append($slot);
@@ -656,7 +691,7 @@ async function renderAlbum(album) {
         $albumDiv.turn({
             width: width,
             height: height,
-            autoCenter: true,
+            autoCenter: false, // Usar CSS flex para centrar y evitar desface dinámico
             gradients: !isMobile,
             acceleration: true,
             display: 'double',
